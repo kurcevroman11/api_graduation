@@ -18,6 +18,7 @@ SET row_security = off;
 
 SET default_tablespace = '';
 
+
 --
 -- Name: activity; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -176,7 +177,7 @@ ALTER SEQUENCE public.file_id_seq OWNED BY public.file.id;
 
 CREATE TABLE public.man_hours (
     id integer NOT NULL,
-    created_at timestamp with time zone,
+    created_at date,
     hours_spent text,
     comment text,
     taskid integer,
@@ -637,7 +638,6 @@ COPY public.description (id, content, file_resources) FROM stdin;
 36	\N	src\\main\\resources\\media\\39\\
 37	\N	src\\main\\resources\\media\\40\\
 38	\N	src\\main\\resources\\media\\41\\
-41	\N	src\\main\\resources\\media\\44\\
 43	\N	src\\main\\resources\\media\\50\\
 44	\N	src\\main\\resources\\media\\51\\
 45	\N	src\\main\\resources\\media\\53\\
@@ -875,6 +875,7 @@ COPY public.description (id, content, file_resources) FROM stdin;
 429	\N	src/main/resources/media/441/
 430	\N	src/main/resources/media/442/
 435	\N	src/main/resources/media/447/
+456	\N	src/main/resources/media/468/
 \.
 
 
@@ -902,6 +903,9 @@ COPY public.file (id, orig_filename, descriptionid, type) FROM stdin;
 \.
 
 
+
+
+
 --
 -- Data for Name: man_hours; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -911,12 +915,12 @@ COPY public.man_hours (id, created_at, hours_spent, comment, taskid, projectid, 
 8	\N	\N	Test	43	41	1
 9	\N	\N	Test	43	41	1
 10	\N	\N	Test	43	41	1
-12	2024-04-01 10:00:00+03	02:00:00	Работа над задачей A	\N	\N	\N
-13	2024-04-01 13:00:00+03	01:15:00	Обеденный перерыв	\N	\N	\N
-14	2024-04-01 14:30:00+03	03:00:00	Работа над задачей B	\N	\N	\N
-15	2024-04-01 18:00:00+03	00:45:00	Вечернее подведение итогов дня	\N	\N	\N
-16	2023-06-16 12:08:36.978+03	01:30	Test	43	41	1
-17	2023-06-16 12:08:36.978+03	01:30	Test	43	41	1
+12	2024-04-01	02:00:00	Работа над задачей A	\N	\N	\N
+13	2024-04-01	01:15:00	Обеденный перерыв	\N	\N	\N
+14	2024-04-01	03:00:00	Работа над задачей B	\N	\N	\N
+15	2024-04-01	00:45:00	Вечернее подведение итогов дня	\N	\N	\N
+16	2023-06-16	01:30	Test	43	41	1
+17	2023-06-16	01:30	Test	43	41	1
 18	\N	01:30	Test	43	41	1
 19	\N	01:30	Tes2	43	41	3
 20	\N	01:30	Tes3	43	41	3
@@ -924,6 +928,9 @@ COPY public.man_hours (id, created_at, hours_spent, comment, taskid, projectid, 
 22	\N	00:45	Tes23	43	41	3
 38	\N	00:45	Tes23	43	41	3
 39	\N	00:45	Tes23	43	41	3
+45	\N	00:45	Tes23	29	28	3
+47	\N	00:45	Tes23	29	28	3
+48	2024-05-10	00:45	Tes23	442	28	3
 \.
 
 
@@ -940,10 +947,6 @@ COPY public.person (id, surname, name, patronymic, role) FROM stdin;
 9				\N
 1	Иванов	Иван	Иванович	Админ
 2	Петров	Пётр		Исполнитель
-17	test	test	test	Проект-менеджер
-18	test	test	test	Проект-менеджер
-19	test	test	test	Проект-менеджер
-20	test	test	test	Проект менеджер
 6	Тестов	Тест	Тестович	Исполнитель
 \.
 
@@ -978,9 +981,6 @@ COPY public.task (id, name, status, start_data, descriptionid, parent, score, ge
 37	Разработка KMM по отрисовки задач	2	2023-06-16 23:52:52.584454+03	34	\N	0	1	2	\N	\N
 38	Test	2	2024-03-29 21:55:49.499668+03	35	\N	0	1	\N	\N	\N
 61	Тест7	2	2024-04-15 11:50:10.397819+03	53	\N	0	1	\N	\N	\N
-44	Прототип футера	2	2024-04-04 17:30:48.579403+03	41	43	10	3	3	\N	\N
-43	Разработать прототип	2	2024-04-04 16:00:33.931895+03	40	41	20	2	3	\N	\N
-41	ФК Черноморец	2	2024-04-04 15:43:34.844193+03	38	\N	20	1	\N	\N	\N
 57		1	2024-04-09 16:55:41.570365+03	\N	\N	\N	1	\N	\N	\N
 60	Тест7	2	2024-04-15 11:46:05.433221+03	52	\N	0	1	\N	\N	\N
 62	Проверка	\N	2024-04-23 10:40:36.633316+03	\N	\N	\N	1	\N	\N	\N
@@ -991,16 +991,19 @@ COPY public.task (id, name, status, start_data, descriptionid, parent, score, ge
 63	Проверка	2	2024-04-23 10:43:13.094319+03	54	\N	10	1	\N	\N	\N
 66	Test12	2	2024-04-23 18:35:00.635972+03	56	63	10	1	3	\N	Ваня - лошара!
 28	Приложение список дел	2	2023-06-16 11:57:11.168978+03	25	\N	15	1	\N	\N	\N
+29	Разработать API	2	2023-06-16 12:04:29.661011+03	26	28	15	2	1	\N	\N
 59	Test24	2	2024-04-15 11:34:44.592853+03	51	28	10	2	3	\N	\N
 33	Разработать дизайн	2	2023-06-16 12:34:05.15122+03	30	28	6	2	2	\N	\N
-29	Разработать API	2	2023-06-16 12:04:29.661011+03	26	28	15	2	1	\N	\N
+468	Test15	2	2024-05-07 12:42:46.526637+03	456	29	15	3	3	\N	Тестовое описание
 30	Разработать get запрос	2	2023-06-16 12:08:08.067671+03	27	29	3	3	1	\N	\N
 35	Разработать что-то	2	2023-06-16 13:45:10.080295+03	32	33	6	3	2	\N	\N
+36	продумывние прототипа	2	2023-06-16 13:47:52.232819+03	33	33	6	3	2	\N	\N
+447	Test15	2	2024-05-06 16:34:13.258408+03	435	440	15	4	3	\N	Тестовое описание
+41	ФК Черноморец	2	2024-04-04 15:43:34.844193+03	38	\N	0	1	\N	\N	\N
+43	Разработать прототип	2	2024-04-04 16:00:33.931895+03	40	41	0	2	3	\N	\N
 198	Test12	2	2024-04-29 16:59:21.195795+03	186	197	10	2	3	\N	Тестовое описание
 197	Test84	2	2024-04-29 16:57:47.881078+03	185	\N	10	1	\N	\N	\N
 275	Test0084	2	2024-05-02 15:02:35.440381+03	263	\N	0	1	\N	\N	\N
-36	продумывние прототипа	2	2023-06-16 13:47:52.232819+03	33	33	6	3	2	\N	\N
-447	Test15	2	2024-05-06 16:34:13.258408+03	435	440	15	4	3	\N	Тестовое описание
 440	Test0007	2	2024-05-06 13:46:57.887226+03	428	29	15	3	3	\N	Тестовое описание
 441	Test0007	2	2024-05-06 13:47:25.076308+03	429	440	6	4	3	\N	Тестовое описание
 442	Test0007	2	2024-05-06 13:52:29.441572+03	430	440	6	4	3	\N	Тестовое описание
@@ -1061,8 +1064,11 @@ COPY public.usersroleproject (id, userid, projectid, type_of_activityid, score, 
 296	3	\N	\N	\N	122	\N
 410	1	\N	\N	\N	43	\N
 411	5	\N	\N	\N	43	\N
+416	1	\N	\N	5	449	\N
 359	1	\N	\N	5	390	\N
+421	1	\N	\N	5	453	\N
 364	1	\N	\N	5	394	\N
+426	1	\N	\N	5	457	\N
 101	3	\N	\N	5	43	\N
 369	1	\N	\N	5	398	\N
 107	\N	63	\N	\N	\N	\N
@@ -1070,7 +1076,6 @@ COPY public.usersroleproject (id, userid, projectid, type_of_activityid, score, 
 110	5	63	\N	\N	\N	\N
 111	8	63	\N	\N	\N	\N
 112	4	63	\N	\N	\N	\N
-115	20	63	\N	\N	\N	\N
 374	1	\N	\N	5	402	\N
 321	1	\N	\N	5	341	\N
 33	3	28	1	7	32	\N
@@ -1079,6 +1084,7 @@ COPY public.usersroleproject (id, userid, projectid, type_of_activityid, score, 
 36	6	28	2	3	34	\N
 37	7	28	2	6	35	\N
 290	1	28	\N	\N	\N	\N
+431	1	\N	\N	5	461	\N
 160	\N	197	\N	\N	\N	\N
 177	\N	197	\N	\N	\N	\N
 81	\N	41	\N	\N	\N	\N
@@ -1088,8 +1094,11 @@ COPY public.usersroleproject (id, userid, projectid, type_of_activityid, score, 
 291	1	41	\N	\N	\N	\N
 379	1	\N	\N	5	406	\N
 326	1	\N	\N	5	345	\N
+436	1	\N	\N	5	465	\N
 384	1	\N	\N	5	410	\N
 331	1	\N	\N	5	349	\N
+437	2	\N	\N	\N	29	\N
+438	6	\N	\N	\N	29	\N
 389	1	\N	\N	5	414	\N
 336	1	\N	\N	5	353	\N
 394	1	\N	\N	5	418	\N
@@ -1114,10 +1123,6 @@ COPY public.usser (id, login, password, personid) FROM stdin;
 4	user2	33	2
 2	admin	admin123	\N
 9	test	00	7
-19	projecter9	00	17
-20	projecter10	00	18
-21	projecter11	00	19
-22	projecter12	01	20
 \.
 
 
@@ -1132,7 +1137,7 @@ SELECT pg_catalog.setval('public.activity_id_seq', 5, true);
 -- Name: description_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.description_id_seq', 435, true);
+SELECT pg_catalog.setval('public.description_id_seq', 456, true);
 
 
 --
@@ -1146,21 +1151,21 @@ SELECT pg_catalog.setval('public.excel_file_id_seq', 1, false);
 -- Name: file_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.file_id_seq', 39, true);
+SELECT pg_catalog.setval('public.file_id_seq', 44, true);
 
 
 --
 -- Name: man_hours_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.man_hours_id_seq', 39, true);
+SELECT pg_catalog.setval('public.man_hours_id_seq', 48, true);
 
 
 --
 -- Name: person_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.person_id_seq', 93, true);
+SELECT pg_catalog.setval('public.person_id_seq', 103, true);
 
 
 --
@@ -1181,7 +1186,7 @@ SELECT pg_catalog.setval('public.status_id_seq', 1, false);
 -- Name: task_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.task_id_seq', 447, true);
+SELECT pg_catalog.setval('public.task_id_seq', 468, true);
 
 
 --
@@ -1202,14 +1207,14 @@ SELECT pg_catalog.setval('public.users_id_seq', 9, true);
 -- Name: usersroleproject_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.usersroleproject_id_seq', 411, true);
+SELECT pg_catalog.setval('public.usersroleproject_id_seq', 438, true);
 
 
 --
 -- Name: usser_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.usser_id_seq', 95, true);
+SELECT pg_catalog.setval('public.usser_id_seq', 105, true);
 
 
 --
@@ -1242,6 +1247,7 @@ ALTER TABLE ONLY public.excel_file
 
 ALTER TABLE ONLY public.file
     ADD CONSTRAINT file_pkey PRIMARY KEY (id);
+
 
 
 --
@@ -1330,6 +1336,8 @@ ALTER TABLE ONLY public.users
 
 ALTER TABLE ONLY public.usersroleproject
     ADD CONSTRAINT usersroleproject_pk PRIMARY KEY (id);
+
+
 
 
 --
