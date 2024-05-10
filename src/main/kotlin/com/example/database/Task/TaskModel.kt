@@ -1,5 +1,6 @@
 package com.example.db.Task
 
+import com.example.database.Person.PersonDTO
 import com.example.database.Task.TaskByID
 import com.example.database.file.FileModel
 import com.example.database.man_hours.ManHoursDTO
@@ -8,6 +9,7 @@ import com.example.db.Description.DescriptionModel
 import com.example.db.UserRoleProject.UserRoleProjectModel
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.*
@@ -242,8 +244,6 @@ object TaskModel : Table("task") {
             }
         }
     }
-
-
     // Запрос для пользователя который НЕ привязан к задаче
     fun getTaskByIdNotExecuter(id: Int): TaskByID? {
         return transaction {
@@ -461,6 +461,51 @@ object TaskModel : Table("task") {
             }
             count++
         }
+    }
+
+    // Рекурсивная функция для получения всех задач
+    // Функция для сбора всех задач в один плоский список
+    fun collectAllTasks(projectId: Int): MutableList<TaskDTO> {
+        val flatTasks = mutableListOf<TaskDTO>()
+
+        fun collectTasksRecursively(parentId: Int) {
+            try {
+                transaction {
+                    // Получаем задачи, у которых parent равен parentId
+                    val currentTasks = TaskModel.select { TaskModel.parent.eq(parentId) }.map {
+                        TaskDTO(
+                            it[TaskModel.id],
+                            it[name],
+                            it[status],
+                            dateTimeToString(it[start_date]?.toDateTime()!!),
+                            it[scope],
+                            it[description],
+                            it[parent],
+                            userCount = null,
+                            generation = it[generation],
+                            content = it[content],
+                            typeofactivityid = it[typeofactivityid],
+                            position = it[position],
+                        )
+                    }
+
+                    // Добавляем все найденные задачи в плоский список
+                    flatTasks.addAll(currentTasks)
+
+                    // Рекурсивно обходим каждого ребенка
+                    currentTasks.forEach { task ->
+                        collectTasksRecursively(task.id!!)
+                    }
+                }
+            } catch (e: Exception) {
+                // Обработка ошибок
+            }
+        }
+
+        // Запускаем сбор задач, начиная с корневого идентификатора
+        collectTasksRecursively(projectId)
+
+        return flatTasks
     }
 }
 

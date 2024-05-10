@@ -15,7 +15,7 @@ object ManHoursModel : Table("man_hours") {
     val projectId = integer("projectid").nullable()
     val activityId = integer("activityid").nullable()
 
-    val formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSSSSZZ")
+
 
     private fun resultRowToNode(row: ResultRow) = ManHoursDTO(
         id = row[ManHoursModel.id],
@@ -27,6 +27,7 @@ object ManHoursModel : Table("man_hours") {
         activityid = row[ManHoursModel.activityId]
     )
 
+    val formatter = DateTimeFormat.forPattern("dd/MM/yyyy")
     suspend fun insert(manHoursDTO: ManHoursDTO) = dbQuery {
         ManHoursModel.insert {
             manHoursDTO.created_at?.let { created_at ->

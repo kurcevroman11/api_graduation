@@ -4,6 +4,7 @@ import com.example.database.UserRoleProject.UserRoleProjectDTO
 import com.example.database.man_hours.ManHoursModel
 import com.example.db.Task.TaskForId.insertandGetIdTask
 import com.example.db.Task.TaskModel.addUserCount
+import com.example.db.Task.TaskModel.collectAllTasks
 import com.example.db.Task.TaskModel.deletTask
 import com.example.db.Task.TaskModel.getDownTask
 import com.example.db.Task.TaskModel.getParentId
@@ -16,14 +17,12 @@ import com.example.db.UserRoleProject.UserRoleProjectModel
 import com.example.plugins.createMedia
 import com.google.gson.Gson
 import io.ktor.http.*
-import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import mu.KotlinLogging
 
 fun Application.TaskContriller() {
     routing {
@@ -70,6 +69,27 @@ fun Application.TaskContriller() {
                         } else {
                             call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
                         }
+                    }
+                }
+
+                get("/taskdependence/{projectid}/{taskid}") {
+                    val projectid = call.parameters["projectid"]?.toIntOrNull()
+                    val taskid = call.parameters["taskid"]?.toIntOrNull()
+                    if (taskid != null && projectid != null) {
+                        val listTaskDTO = collectAllTasks(
+                            projectId = projectid
+                        )
+
+                        val task = listTaskDTO.find { it.id == taskid }
+
+                        // Удаление родителя
+                        val parentTask = listTaskDTO.find { it.id == task?.parent }
+                        listTaskDTO.removeIf { it.id == parentTask?.id }
+
+                        listTaskDTO.removeIf { it.id == taskid }
+                        call.respond(listTaskDTO!!)
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
                     }
                 }
 
