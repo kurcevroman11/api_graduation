@@ -79,12 +79,12 @@ fun Application.UserRoleProjectController() {
                                 val usersInProj = fetchUserInProj(getData.userid, getData.projectid!!)
                                 if (usersInProj.isNotEmpty()) {
                                     call.respond(HttpStatusCode.Conflict, "User already added")
-                                    // Очистка поля creater_project, так как не только создатель привязан к проекту
-                                    clearFieldCreateProject(getData.projectid)
                                 } else {
                                     insert(getData)
                                 }
                                 call.respond(HttpStatusCode.Created)
+                                // Очистка поля creater_project, так как не только создатель привязан к проекту
+                                clearFieldCreateProject(getData.projectid)
                             } else if(getData.current_task_id != null) {
                                 linkinUserRootTask(getData)
                                 call.respond(HttpStatusCode.Created)
