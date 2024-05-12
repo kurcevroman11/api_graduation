@@ -21,6 +21,12 @@ object DependenceModel : Table("dependence") {
         }
     }
 
+    suspend fun getAllDependences(): List<Dependence> = dbQuery {
+        DependenceModel
+            .selectAll()
+            .map(::resultRowToNode)
+    }
+
     suspend fun getDependences(dependent: Int): Dependence? = dbQuery {
         DependenceModel
             .select { DependenceModel.dependent.eq(dependent) }

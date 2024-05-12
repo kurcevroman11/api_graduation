@@ -171,6 +171,10 @@ ALTER TABLE public.file_id_seq OWNER TO postgres;
 ALTER SEQUENCE public.file_id_seq OWNED BY public.file.id;
 
 
+
+
+
+
 --
 -- Name: man_hours; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -611,7 +615,6 @@ COPY public.activity (id, name) FROM stdin;
 --
 
 COPY public.dependence (depends_on, dependent) FROM stdin;
-441	442
 \.
 
 
@@ -876,6 +879,7 @@ COPY public.description (id, content, file_resources) FROM stdin;
 430	\N	src/main/resources/media/442/
 435	\N	src/main/resources/media/447/
 456	\N	src/main/resources/media/468/
+457	\N	src/main/resources/media/469/
 \.
 
 
@@ -901,8 +905,6 @@ COPY public.file (id, orig_filename, descriptionid, type) FROM stdin;
 22	backup	49	sql
 23	backup	49	sql
 \.
-
-
 
 
 
@@ -990,17 +992,18 @@ COPY public.task (id, name, status, start_data, descriptionid, parent, score, ge
 95	Test	2	2024-04-24 17:26:52.372004+03	84	80	10	1	1	\N	\N
 63	Проверка	2	2024-04-23 10:43:13.094319+03	54	\N	10	1	\N	\N	\N
 66	Test12	2	2024-04-23 18:35:00.635972+03	56	63	10	1	3	\N	Ваня - лошара!
-28	Приложение список дел	2	2023-06-16 11:57:11.168978+03	25	\N	15	1	\N	\N	\N
+28	Приложение список дел	2	2023-06-16 11:57:11.168978+03	25	\N	16	1	\N	\N	\N
 29	Разработать API	2	2023-06-16 12:04:29.661011+03	26	28	15	2	1	\N	\N
-59	Test24	2	2024-04-15 11:34:44.592853+03	51	28	10	2	3	\N	\N
-33	Разработать дизайн	2	2023-06-16 12:34:05.15122+03	30	28	6	2	2	\N	\N
+59	Test24	2	2024-04-15 11:34:44.592853+03	51	28	16	2	3	\N	\N
+33	Разработать дизайн	2	2023-06-16 12:34:05.15122+03	30	28	12	2	2	\N	\N
 468	Test15	2	2024-05-07 12:42:46.526637+03	456	29	15	3	3	\N	Тестовое описание
 30	Разработать get запрос	2	2023-06-16 12:08:08.067671+03	27	29	3	3	1	\N	\N
 35	Разработать что-то	2	2023-06-16 13:45:10.080295+03	32	33	6	3	2	\N	\N
-36	продумывние прототипа	2	2023-06-16 13:47:52.232819+03	33	33	6	3	2	\N	\N
-447	Test15	2	2024-05-06 16:34:13.258408+03	435	440	15	4	3	\N	Тестовое описание
 41	ФК Черноморец	2	2024-04-04 15:43:34.844193+03	38	\N	0	1	\N	\N	\N
 43	Разработать прототип	2	2024-04-04 16:00:33.931895+03	40	41	0	2	3	\N	\N
+469	Test0084	2	2024-05-10 18:04:51.115719+03	457	\N	0	1	\N	\N	\N
+36	продумывние прототипа	2	2023-06-16 13:47:52.232819+03	33	33	12	3	2	\N	\N
+447	Test15	2	2024-05-06 16:34:13.258408+03	435	440	15	4	3	\N	Тестовое описание
 198	Test12	2	2024-04-29 16:59:21.195795+03	186	197	10	2	3	\N	Тестовое описание
 197	Test84	2	2024-04-29 16:57:47.881078+03	185	\N	10	1	\N	\N	\N
 275	Test0084	2	2024-05-02 15:02:35.440381+03	263	\N	0	1	\N	\N	\N
@@ -1100,6 +1103,8 @@ COPY public.usersroleproject (id, userid, projectid, type_of_activityid, score, 
 437	2	\N	\N	\N	29	\N
 438	6	\N	\N	\N	29	\N
 389	1	\N	\N	5	414	\N
+439	\N	469	\N	\N	\N	\N
+440	1	469	\N	\N	\N	\N
 336	1	\N	\N	5	353	\N
 394	1	\N	\N	5	418	\N
 341	1	\N	\N	5	357	\N
@@ -1137,7 +1142,7 @@ SELECT pg_catalog.setval('public.activity_id_seq', 5, true);
 -- Name: description_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.description_id_seq', 456, true);
+SELECT pg_catalog.setval('public.description_id_seq', 457, true);
 
 
 --
@@ -1186,7 +1191,7 @@ SELECT pg_catalog.setval('public.status_id_seq', 1, false);
 -- Name: task_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.task_id_seq', 468, true);
+SELECT pg_catalog.setval('public.task_id_seq', 469, true);
 
 
 --
@@ -1207,7 +1212,7 @@ SELECT pg_catalog.setval('public.users_id_seq', 9, true);
 -- Name: usersroleproject_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.usersroleproject_id_seq', 438, true);
+SELECT pg_catalog.setval('public.usersroleproject_id_seq', 440, true);
 
 
 --
@@ -1338,6 +1343,13 @@ ALTER TABLE ONLY public.usersroleproject
     ADD CONSTRAINT usersroleproject_pk PRIMARY KEY (id);
 
 
+
+
+--
+-- Name: idx_unique_dependence; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX idx_unique_dependence ON public.dependence USING btree (depends_on, dependent);
 
 
 --

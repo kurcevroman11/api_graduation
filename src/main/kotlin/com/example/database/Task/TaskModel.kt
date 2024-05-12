@@ -248,7 +248,8 @@ object TaskModel : Table("task") {
                             taskDependenceOn = TaskDependenceOn(
                                 id = taskDependenceOn?.id,
                                 name = taskDependenceOn?.name
-                            )
+                            ),
+                            haveNotChild = getDownTask(id).isEmpty()
                         )
                     }
                 }
@@ -298,7 +299,8 @@ object TaskModel : Table("task") {
                             taskDependenceOn = TaskDependenceOn(
                                 id = taskDependenceOn?.id,
                                 name = taskDependenceOn?.name
-                            )
+                            ),
+                            haveNotChild = getDownTask(id).isEmpty()
                         )
                     }
 

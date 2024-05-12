@@ -1,5 +1,6 @@
 package com.example.db.Task
 
+import com.example.database.Dependence.DependenceModel.getAllDependences
 import com.example.database.UserRoleProject.UserRoleProjectDTO
 import com.example.database.man_hours.ManHoursModel
 import com.example.db.Task.TaskForId.insertandGetIdTask
@@ -87,6 +88,7 @@ fun Application.TaskContriller() {
                         listTaskDTO.removeIf { it.id == parentTask?.id }
 
                         listTaskDTO.removeIf { it.id == taskid }
+
                         call.respond(listTaskDTO!!)
                     } else {
                         call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
@@ -115,7 +117,10 @@ fun Application.TaskContriller() {
                     updateTask(taskParent!!.id!!, taskParent!!)
 
                     val projectId = getParentId(id.toInt())
-                    recalculationScore(projectId, taskOrSubtask.generation!!)
+
+                    if(taskOrSubtask.scope!! > taskParent.scope!!) {
+                        recalculationScore(projectId, taskOrSubtask.generation!!)
+                    }
 
                     call.respond(HttpStatusCode.Created)
                 }
@@ -185,8 +190,37 @@ fun Application.TaskContriller() {
                                 updateTask(parent?.id!!, parent)
                                 // Повторный перерасчет для обноления score у родительских элементов
                                 recalculationScore(projectId, task?.generation!!)
+                               val depenc = getAllDependences()
+                                depenc.forEach{ item ->
+                                    val taskDepent = getTask(item.dependent)
+                                    val taskDepentOn = getTask(item.dependsOn)
+                                    taskDepent?.scope = taskDepent?.scope!! + taskDepentOn?.scope!!
+
+                                    // Обновление
+                                    updateTask(taskDepent.id!!, taskDepent)
+                                    val projectId = getParentId(taskDepent?.id!!)
+                                    // Перерасчет графа проекта
+                                    recalculationScore(projectId, taskDepent?.generation!! - 1)
+                                    // Обновление
+                                    updateTask(taskDepent.id!!, taskDepent)
+                                }
                             } else {
                                 recalculationScore(projectId, task?.generation!!)
+
+                                val depenc = getAllDependences()
+                                depenc.forEach{ item ->
+                                    val taskDepent = getTask(item.dependent)
+                                    val taskDepentOn = getTask(item.dependsOn)
+                                    taskDepent?.scope = taskDepent?.scope!! + taskDepentOn?.scope!!
+
+                                    // Обновление
+                                    updateTask(taskDepent.id!!, taskDepent)
+                                    val projectId = getParentId(taskDepent?.id!!)
+                                    // Перерасчет графа проекта
+                                    recalculationScore(projectId, taskDepent?.generation!! - 1)
+                                    // Обновление
+                                    updateTask(taskDepent.id!!, taskDepent)
+                                }
                             }
                         }
 

@@ -1,5 +1,6 @@
 package com.example.db.Task
 
+import com.example.database.Task.TaskDependenceOn
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.joda.time.DateTime
@@ -19,6 +20,7 @@ class TaskDTO(
     var content: String? = null,
     var typeofactivityid: Int?,
     var position: Int?,
+    val taskDependenceOn: TaskDependenceOn? = null
 )
 {
     constructor() : this(

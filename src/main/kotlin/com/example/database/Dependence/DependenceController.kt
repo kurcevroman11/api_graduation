@@ -36,7 +36,10 @@ class DependenceController(val call: ApplicationCall) {
                 updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
                 val projectId = getParentId(dependentTaskDTO?.id!!)
                 // Перерасчет графа проекта
-                recalculationScore(projectId, dependentTaskDTO?.generation!!)
+                recalculationScore(projectId, dependentTaskDTO?.generation!! - 1)
+
+                // Обновление
+                updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
             }
 
             call.respond(HttpStatusCode.Created, "Dependence created")
