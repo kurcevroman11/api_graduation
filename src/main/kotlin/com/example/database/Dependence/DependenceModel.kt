@@ -9,25 +9,28 @@ object DependenceModel : Table("dependence") {
     val dependsOn = integer("depends_on").references(TaskModel.id) // Внешний ключ к таблице "task"
     val dependent = integer("dependent").references(TaskModel.id)
 
-
     private fun resultRowToNode(row: ResultRow) = Dependence(
-        dependsOn = mutableListOf(row[DependenceModel.dependsOn]),
+        dependsOn = row[DependenceModel.dependsOn],
         dependent = row[DependenceModel.dependent],
     )
 
     suspend fun addDependence(dependence: Dependence) = dbQuery {
-        dependence.dependsOn.forEach { dependsOn ->
-            DependenceModel.insert {
-                it[DependenceModel.dependsOn] = dependsOn
-                it[DependenceModel.dependent] = dependence.dependent
-            }
+        DependenceModel.insert {
+            it[DependenceModel.dependsOn] = dependence.dependsOn
+            it[DependenceModel.dependent] = dependence.dependent
         }
     }
 
-    suspend fun getAllDependences(dependsOn: Int): List<Dependence> = dbQuery {
+    suspend fun getDependences(dependent: Int): Dependence = dbQuery {
         DependenceModel
-            .select { DependenceModel.dependsOn.eq(dependsOn) }
-            .map(::resultRowToNode)
+            .select { DependenceModel.dependent.eq(dependent) }
+            .map(::resultRowToNode).single()
+    }
+
+    suspend fun getDependenceForDelete(dependentOn: Int): Dependence = dbQuery {
+        DependenceModel
+            .select { DependenceModel.dependsOn.eq(dependentOn) }
+            .map(::resultRowToNode).single()
     }
 
     suspend fun deleteDependence(dependsOn: Int) {

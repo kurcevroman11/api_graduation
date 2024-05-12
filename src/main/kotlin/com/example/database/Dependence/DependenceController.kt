@@ -2,7 +2,8 @@ package com.example.database.Dependence
 
 import com.example.database.Dependence.DependenceModel.addDependence
 import com.example.database.Dependence.DependenceModel.deleteDependence
-import com.example.database.Dependence.DependenceModel.getAllDependences
+import com.example.database.Dependence.DependenceModel.getDependenceForDelete
+import com.example.database.Dependence.DependenceModel.getDependences
 import com.example.db.Task.TaskDTO
 import com.example.db.Task.TaskModel.getParentId
 import com.example.db.Task.TaskModel.getTask
@@ -25,14 +26,10 @@ class DependenceController(val call: ApplicationCall) {
             var dependentTaskDTO = getTask(dependenceDTO.dependent!!)
 
             // Извленчение задач от которых зависит dependentTaskDTO
-            val dependsOnTaskDTO: MutableList<TaskDTO> = dependenceDTO.dependsOn.mapNotNull { taskId ->
-                getTask(taskId)
-            }.toMutableList()
+            val dependsOnTaskDTO: TaskDTO? = getTask(dependenceDTO.dependsOn)
 
             // Суммирование время выполнения задачи
-            dependsOnTaskDTO.forEach { score ->
-                dependentTaskDTO?.scope = score.scope!! + dependentTaskDTO?.scope!!
-            }
+            dependentTaskDTO?.scope = dependsOnTaskDTO?.scope!! + dependentTaskDTO?.scope!!
 
             if(dependentTaskDTO?.id != null) {
                 // Обновление
@@ -55,9 +52,9 @@ class DependenceController(val call: ApplicationCall) {
             // Удаляемая привязанная задача
             val dependentOnTaskDTO = getTask(dependsOn)
 
-            val dependence = getAllDependences(dependsOn)
+            val dependence = getDependenceForDelete(dependsOn)
             // Зависимая задача
-            val dependentTaskDTO = getTask(dependence[0].dependent)
+            val dependentTaskDTO = getTask(dependence.dependent)
             // Вычитания время выполнения задачи
             dependentTaskDTO?.scope = dependentTaskDTO?.scope!! - dependentOnTaskDTO?.scope!!
 

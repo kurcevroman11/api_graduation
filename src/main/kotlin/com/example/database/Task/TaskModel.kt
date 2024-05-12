@@ -1,7 +1,9 @@
 package com.example.db.Task
 
+import com.example.database.Dependence.DependenceModel.getDependences
 import com.example.database.Person.PersonDTO
 import com.example.database.Task.TaskByID
+import com.example.database.Task.TaskDependenceOn
 import com.example.database.file.FileModel
 import com.example.database.man_hours.ManHoursDTO
 import com.example.database.man_hours.ManHoursModel.fetchById
@@ -200,7 +202,6 @@ object TaskModel : Table("task") {
         }
     }
 
-
     // Запрос для пользователя который привязан к задаче
     fun getTaskById(id: Int, userId: Int): TaskByID? {
         return transaction {
@@ -224,6 +225,11 @@ object TaskModel : Table("task") {
                         // Извлечение трудозатрат по определенной задаче
                         val manHours = fetchById(id)
 
+                        // Извелелчение id задачи от которой есть зависимость
+                        val taskIdDependence = getDependences(id)
+
+                        val taskDependenceOn = getTask(taskIdDependence.dependsOn)
+
                         task = TaskByID(
                             id = rs.getInt("id"),
                             name = rs.getString("name"),
@@ -235,10 +241,13 @@ object TaskModel : Table("task") {
                             typeofactivityid =  rs.getInt("typeofactivityid"),
                             spentedTime = totalHoursAndMinutes(manHours),
                             canAddManHours = true,
-                            projectId = getParentId(id)
+                            projectId = getParentId(id),
+                            taskDependenceOn = TaskDependenceOn(
+                                id = taskDependenceOn?.id,
+                                name = taskDependenceOn?.name
+                            )
                         )
                     }
-
                 }
                 return@exec task
             }
@@ -264,6 +273,11 @@ object TaskModel : Table("task") {
                         // Извлечение трудозатрат по определенной задаче
                         val manHours = fetchById(id)
 
+                        // Извелелчение id задачи от которой есть зависимость
+                        val taskIdDependence = getDependences(id)
+
+                        val taskDependenceOn = getTask(taskIdDependence.dependsOn)
+
                         task = TaskByID(
                             id = rs.getInt("id"),
                             name = rs.getString("name"),
@@ -275,7 +289,11 @@ object TaskModel : Table("task") {
                             typeofactivityid =  rs.getInt("typeofactivityid"),
                             spentedTime = totalHoursAndMinutes(manHours),
                             canAddManHours = false,
-                            projectId = getParentId(id)
+                            projectId = getParentId(id),
+                            taskDependenceOn = TaskDependenceOn(
+                                id = taskDependenceOn?.id,
+                                name = taskDependenceOn?.name
+                            )
                         )
                     }
 
