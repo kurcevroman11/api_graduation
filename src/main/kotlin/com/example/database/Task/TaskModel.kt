@@ -228,7 +228,10 @@ object TaskModel : Table("task") {
                         // Извелелчение id задачи от которой есть зависимость
                         val taskIdDependence = getDependences(id)
 
-                        val taskDependenceOn = getTask(taskIdDependence.dependsOn)
+                        var taskDependenceOn: TaskDTO? = null
+                        if(taskIdDependence != null) {
+                            taskDependenceOn = getTask(taskIdDependence.dependsOn)
+                        }
 
                         task = TaskByID(
                             id = rs.getInt("id"),
@@ -276,8 +279,10 @@ object TaskModel : Table("task") {
                         // Извелелчение id задачи от которой есть зависимость
                         val taskIdDependence = getDependences(id)
 
-                        val taskDependenceOn = getTask(taskIdDependence.dependsOn)
-
+                        var taskDependenceOn: TaskDTO? = null
+                        if(taskIdDependence != null) {
+                            taskDependenceOn = getTask(taskIdDependence.dependsOn)
+                        }
                         task = TaskByID(
                             id = rs.getInt("id"),
                             name = rs.getString("name"),

@@ -54,7 +54,7 @@ class DependenceController(val call: ApplicationCall) {
 
             val dependence = getDependenceForDelete(dependsOn)
             // Зависимая задача
-            val dependentTaskDTO = getTask(dependence.dependent)
+            val dependentTaskDTO = dependence?.let { getTask(it.dependent) }
             // Вычитания время выполнения задачи
             dependentTaskDTO?.scope = dependentTaskDTO?.scope!! - dependentOnTaskDTO?.scope!!
 

@@ -21,10 +21,10 @@ object DependenceModel : Table("dependence") {
         }
     }
 
-    suspend fun getDependences(dependent: Int): Dependence = dbQuery {
+    suspend fun getDependences(dependent: Int): Dependence? = dbQuery {
         DependenceModel
             .select { DependenceModel.dependent.eq(dependent) }
-            .map(::resultRowToNode).single()
+            .map(::resultRowToNode).singleOrNull()
     }
 
     suspend fun getDependenceForDelete(dependentOn: Int): Dependence = dbQuery {
