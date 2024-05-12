@@ -1,5 +1,6 @@
 package com.example.db.Task
 
+import com.example.database.Dependence.DependenceModel.getAllDependences
 import com.example.database.Dependence.DependenceModel.getDependences
 import com.example.database.Person.PersonDTO
 import com.example.database.Task.TaskByID
@@ -447,6 +448,58 @@ object TaskModel : Table("task") {
             }
         } catch (e: Exception) {
             0
+        }
+    }
+
+    suspend fun recalculationScoreWithDependence() {
+        var depenc = getAllDependences()
+        depenc = depenc.reversed()
+        depenc.forEach { item ->
+            val taskDepent = getTask(item.dependent)
+            val taskDepentOn = getTask(item.dependsOn)
+
+            val taskParent = getTask(taskDepent?.parent!!)
+            if(taskParent?.generation == 1) {
+                if(taskParent.scope!! < taskDepent.scope!!) {
+                    taskParent.scope = taskDepent.scope!!
+                    updateTask(taskParent.id!!, taskParent)
+                }
+            } else {
+                while(taskParent?.generation != 1) {
+                    if(taskParent?.scope!! < taskDepent.scope!!) {
+                        taskParent.scope = taskDepent.scope!!
+                        updateTask(taskParent.id!!, taskParent)
+                    }
+                }
+            }
+        }
+    }
+
+    suspend fun recalculationScoreWithDependenceForDelete() {
+        var depenc = getAllDependences()
+        depenc = depenc.reversed()
+        depenc.forEach { item ->
+            val taskDepent = getTask(item.dependent)
+            val taskDepentOn = getTask(item.dependsOn)
+            taskDepent?.scope = taskDepent?.scope!! + taskDepentOn?.scope!!
+
+            // Обновление
+            updateTask(taskDepent.id!!, taskDepent)
+
+            val taskParent = getTask(taskDepent.parent!!)
+            if(taskParent?.generation == 1) {
+                if(taskParent.scope!! < taskDepent.scope!!) {
+                    taskParent.scope = taskDepent.scope!!
+                    updateTask(taskParent.id!!, taskParent)
+                }
+            } else {
+                while(taskParent?.generation != 1) {
+                    if(taskParent?.scope!! < taskDepent.scope!!) {
+                        taskParent.scope = taskDepent.scope!!
+                        updateTask(taskParent.id!!, taskParent)
+                    }
+                }
+            }
         }
     }
 

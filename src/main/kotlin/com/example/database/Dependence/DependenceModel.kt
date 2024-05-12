@@ -33,10 +33,10 @@ object DependenceModel : Table("dependence") {
             .map(::resultRowToNode).singleOrNull()
     }
 
-    suspend fun getDependenceForDelete(dependentOn: Int): Dependence = dbQuery {
+    suspend fun getDependenceForDelete(dependentOn: Int): Dependence? = dbQuery {
         DependenceModel
             .select { DependenceModel.dependsOn.eq(dependentOn) }
-            .map(::resultRowToNode).single()
+            .map(::resultRowToNode).singleOrNull()
     }
 
     suspend fun deleteDependence(dependsOn: Int) {
