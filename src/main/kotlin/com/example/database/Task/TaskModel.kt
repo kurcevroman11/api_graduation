@@ -458,17 +458,24 @@ object TaskModel : Table("task") {
             val taskDepent = getTask(item.dependent)
             val taskDepentOn = getTask(item.dependsOn)
 
-            val taskParent = getTask(taskDepent?.parent!!)
-            if(taskParent?.generation == 1) {
-                if(taskParent.scope!! < taskDepent.scope!!) {
+            var taskParent = getTask(taskDepent?.parent!!)
+            if(taskParent == null) {
+                if(taskParent?.scope!! < taskDepent.scope!!) {
                     taskParent.scope = taskDepent.scope!!
                     updateTask(taskParent.id!!, taskParent)
                 }
             } else {
-                while(taskParent?.generation != 1) {
+                while(taskParent != null) {
                     if(taskParent?.scope!! < taskDepent.scope!!) {
                         taskParent.scope = taskDepent.scope!!
                         updateTask(taskParent.id!!, taskParent)
+                    }
+
+                    if(taskParent?.parent != null ) {
+                        // Движение вверх по иерарахии
+                        taskParent = getTask(taskParent?.parent!!)
+                    } else {
+                        taskParent = null
                     }
                 }
             }
