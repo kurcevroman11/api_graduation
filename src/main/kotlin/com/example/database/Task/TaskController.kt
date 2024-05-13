@@ -90,6 +90,10 @@ fun Application.TaskContriller() {
                         val parentTask = listTaskDTO.find { it.id == task?.parent }
                         listTaskDTO.removeIf { it.id == parentTask?.id }
 
+                        // Удаление дочерненего элемента
+                        val childTask = listTaskDTO.find { it.parent == task?.id }
+                        listTaskDTO.removeIf { it.id == childTask?.id }
+
                         listTaskDTO.removeIf { it.id == taskid }
 
                         call.respond(listTaskDTO!!)
