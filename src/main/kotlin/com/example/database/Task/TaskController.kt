@@ -2,6 +2,7 @@ package com.example.db.Task
 
 import com.example.database.Dependence.DependenceModel.getAllDependences
 import com.example.database.Dependence.DependenceModel.getDependenceForDelete
+import com.example.database.Dependence.DependenceModel.getDependences
 import com.example.database.UserRoleProject.UserRoleProjectDTO
 import com.example.database.man_hours.ManHoursModel
 import com.example.db.Task.TaskForId.insertandGetIdTask
@@ -126,7 +127,6 @@ fun Application.TaskContriller() {
                     val projectId = getParentId(id.toInt())
                     recalculationScore(projectId, taskOrSubtask.generation!!)
                     recalculationScoreWithDependence()
-
 
                     call.respond(HttpStatusCode.Created)
                 }

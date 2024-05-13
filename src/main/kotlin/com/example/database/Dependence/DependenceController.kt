@@ -28,16 +28,28 @@ class DependenceController(val call: ApplicationCall) {
             addDependence(dependenceDTO)
             var dependentTaskDTO = getTask(dependenceDTO.dependent!!)
 
-            // Извленчение задач от которых зависит dependentTaskDTO
+            // Проверка нет ли у зависимой задачи ее зависимая задача если так
+            // то нужно сделать вычитание у зависимой задачи чтобы получить ее начальное значение
+            // Извлечение связки
+            var dependentId2 = getDependenceForDelete(dependenceDTO.dependent)
+            if(dependentId2 != null) {
+                var dependenceOnTaskDTO2 = getTask(dependentId2.dependsOn!!)
+                var dependentTaskDTO2 = getTask(dependentId2.dependent!!)
+
+                dependentTaskDTO2?.scope = dependentTaskDTO2?.scope!! - dependenceOnTaskDTO2?.scope!!
+                updateTask(dependentTaskDTO2.id!!, dependentTaskDTO2)
+            }
+
+            // Извленчение задачи от которой зависит dependentTaskDTO
             val dependsOnTaskDTO: TaskDTO? = getTask(dependenceDTO.dependsOn)
 
             // Суммирование время выполнения задачи
             dependentTaskDTO?.scope = dependsOnTaskDTO?.scope!! + dependentTaskDTO?.scope!!
+            // Обновление
+            updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
 
+            // Перерачсчт если зависимая задача имела зависимости для других задач
             if(dependentTaskDTO?.id != null) {
-                // Обновление
-                updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
-
                 var dependentId2 = getDependenceForDelete(dependenceDTO.dependent)
                 while(dependentId2 != null) {
                     var dependentTaskDTO2 = getTask(dependentId2.dependent!!)
