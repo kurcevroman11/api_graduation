@@ -32,7 +32,7 @@ class Excel {
         workbook.close()
     }
 
-    fun writeExcel(outputPath: String) {
+    suspend fun writeExcel(outputPath: String) {
         val workbook = XSSFWorkbook()
         val sheet = workbook.createSheet("Sheet1")
 
@@ -51,7 +51,7 @@ class Excel {
 
         // Метод, который выводить словарь, где ключ - название задача, а
         // значение кол-во дней выполнения задания
-        val calendarPlan = UserRoleProjectModel.scheduling()
+        val calendarPlan = UserRoleProjectModel.scheduling(28)
 
         val data = calendarPlan
 

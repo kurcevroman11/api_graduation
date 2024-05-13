@@ -39,9 +39,14 @@ fun Application.UserRoleProjectController() {
                     call.respond(HttpStatusCode.Created)
                 }
 
-                get("/calendar_plan") {
-                    val serializedList = scheduling()
-                    call.respond(serializedList)
+                get("/calendar_plan/{projId}") {
+                    val projId = call.parameters["projId"]?.toIntOrNull()
+                    if (projId != null) {
+                        val serializedList = scheduling(projId)
+                        call.respond(serializedList)
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
+                    }
                 }
 
                 get("/excel") {

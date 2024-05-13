@@ -4,6 +4,7 @@ import com.example.dao.DatabaseFactory.dbQuery
 import com.example.db.Task.TaskModel
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.transactions.transaction
 
 object DependenceModel : Table("dependence") {
     val dependsOn = integer("depends_on").references(TaskModel.id) // Внешний ключ к таблице "task"
@@ -27,10 +28,23 @@ object DependenceModel : Table("dependence") {
             .map(::resultRowToNode)
     }
 
+
     suspend fun getDependences(dependent: Int): Dependence? = dbQuery {
         DependenceModel
             .select { DependenceModel.dependent.eq(dependent) }
             .map(::resultRowToNode).singleOrNull()
+    }
+
+    fun getDependencesInt(dependent: Int): Int? {
+        return try {
+            transaction {
+                DependenceModel.select {
+                    DependenceModel.dependent eq dependent
+                }.singleOrNull()?.get(DependenceModel.dependsOn) ?: 0
+            }
+        } catch (e: Exception) {
+            0
+        }
     }
 
     suspend fun getDependenceForDelete(dependentOn: Int): Dependence? = dbQuery {

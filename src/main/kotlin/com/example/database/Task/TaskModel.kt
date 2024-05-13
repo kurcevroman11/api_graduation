@@ -25,10 +25,10 @@ import org.joda.time.format.DateTimeFormat
 object TaskModel : Table("task") {
 
     val id = TaskModel.integer("id").autoIncrement()
-    private val name = TaskModel.varchar("name", 64)
-    private val status = TaskModel.integer("status").nullable()
+    val name = TaskModel.varchar("name", 64)
+    val status = TaskModel.integer("status").nullable()
     private val start_date = TaskModel.datetime("start_data")
-    private val scope = TaskModel.integer("score").nullable()
+    val scope = TaskModel.integer("score").nullable()
     private val description = TaskModel.integer("descriptionid").nullable()
     val parent = TaskModel.integer("parent").nullable()
     val generation = TaskModel.integer("generation").nullable()
