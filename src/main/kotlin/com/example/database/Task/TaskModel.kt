@@ -456,7 +456,6 @@ object TaskModel : Table("task") {
         depenc = depenc.reversed()
         depenc.forEach { item ->
             val taskDepent = getTask(item.dependent)
-            val taskDepentOn = getTask(item.dependsOn)
 
             var taskParent = getTask(taskDepent?.parent!!)
             if(taskParent == null) {
