@@ -20,6 +20,11 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.apache.poi.ss.usermodel.FillPatternType
+import org.apache.poi.ss.usermodel.HorizontalAlignment
+import org.apache.poi.ss.usermodel.IndexedColors
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import java.io.ByteArrayOutputStream
 
 fun Application.UserRoleProjectController() {
     routing {
@@ -49,10 +54,77 @@ fun Application.UserRoleProjectController() {
                     }
                 }
 
-                get("/excel") {
-                    val ex = Excel()
-                    ex.writeExcel("C:\\Users\\386\\OneDrive\\Документы\\Сайт\\plan.xlsx")
-                    call.respond(HttpStatusCode.OK)
+                get("/excel/{projId}") {
+                    val projId = call.parameters["projId"]?.toIntOrNull()
+
+                    if (projId != null) {
+                        val workbook = XSSFWorkbook()
+                        val sheet = workbook.createSheet("Sheet1")
+
+                        val cellStyle = workbook.createCellStyle()
+                        val color = IndexedColors.GREEN.getIndex()
+                        cellStyle.setFillForegroundColor(color)
+                        cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND)
+
+                        // Создание заголовка
+                        val headerRow = sheet.createRow(0)
+
+                        for (header in 1..120) {
+                            val cell = headerRow.createCell(header)
+                            cell.setCellValue(header.toString() + " день")
+                        }
+
+                        // Метод, который выводить словарь, где ключ - название задача, а
+                        // значение кол-во дней выполнения задания
+                        val calendarPlan = UserRoleProjectModel.scheduling(projId)
+
+                        val data = calendarPlan
+
+                        for ((rowIndex, rowData) in data.withIndex()) {
+                            val row = sheet.createRow(rowIndex + 1)
+
+                            val cell = row.createCell(0)
+                            cell.setCellValue(rowData.nameTask)
+                            for (i in 1..rowData.execution) {
+                                val cellExecution = row.createCell(i + rowData.start)
+                                cellExecution.setCellValue(" ")
+                                cellExecution.cellStyle = cellStyle
+                            }
+                        }
+
+
+                        val headerStyle = workbook.createCellStyle()
+                        headerStyle.alignment = HorizontalAlignment.CENTER
+                        val headerFont = workbook.createFont()
+                        headerFont.bold = true
+                        headerStyle.setFont(headerFont)
+                        val cell = headerRow.createCell(0)
+                        cell.cellStyle = headerStyle
+                        cell.setCellValue("Task/Day") // Установка значения ячейки
+                        sheet.setColumnWidth(0, 12 * 256) // Установка ширины столбцов
+                        headerRow.getCell(0).cellStyle = headerStyle
+
+
+                        sheet.setColumnWidth(0, 12 * 256) // Установка ширины столбца
+
+                        // Записываем файл в ByteArrayOutputStream
+                        val outputStream = ByteArrayOutputStream()
+                        workbook.write(outputStream)
+                        workbook.close()
+
+                        val byteArray = outputStream.toByteArray()
+
+                        // Отправляем файл клиенту
+                        call.response.header(
+                            HttpHeaders.ContentDisposition,
+                            ContentDisposition.Attachment.withParameter(ContentDisposition.Parameters.FileName, "project_$projId.xlsx").toString()
+                        )
+
+                        // Отправляем файл клиенту
+                        call.respondBytes(byteArray, ContentType.Application.OctetStream, HttpStatusCode.OK)
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
+                    }
                 }
 
                 get("/task/{id}") {

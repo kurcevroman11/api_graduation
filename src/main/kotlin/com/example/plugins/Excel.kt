@@ -5,9 +5,11 @@ import org.apache.poi.ss.usermodel.CellType
 import org.apache.poi.ss.usermodel.FillPatternType
 import org.apache.poi.ss.usermodel.HorizontalAlignment
 import org.apache.poi.ss.usermodel.IndexedColors
+import org.apache.poi.xssf.usermodel.XSSFCellStyle
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 
 
 data class CalendarPlan(val nameTask: String, val execution: Int, val start: Int = 0)
@@ -32,7 +34,7 @@ class Excel {
         workbook.close()
     }
 
-    suspend fun writeExcel(outputPath: String) {
+    fun writeExcel(projectId: Int, outputPath: String) {
         val workbook = XSSFWorkbook()
         val sheet = workbook.createSheet("Sheet1")
 
@@ -51,7 +53,7 @@ class Excel {
 
         // Метод, который выводить словарь, где ключ - название задача, а
         // значение кол-во дней выполнения задания
-        val calendarPlan = UserRoleProjectModel.scheduling(28)
+        val calendarPlan = UserRoleProjectModel.scheduling(projectId)
 
         val data = calendarPlan
 
@@ -81,12 +83,6 @@ class Excel {
 
 
         sheet.setColumnWidth(0, 12 * 256) // Установка ширины столбца
-        // Сохранение файла Excel
-        val fileOut = FileOutputStream(outputPath)
-        workbook.write(fileOut)
-        fileOut.close()
-
-        workbook.close()
     }
 
 }
