@@ -54,6 +54,7 @@ object PersonModule: Table("person") {
         }
     }
 
+    // Получение поьзователей которые привазаны к проекту
     fun getUserInProj(idProj: Int): List<PersonDTO> {
         return transaction {
             // Соединение таблиц 'person' и 'usersroleproject'
