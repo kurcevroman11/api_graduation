@@ -18,7 +18,6 @@ SET row_security = off;
 
 SET default_tablespace = '';
 
-
 --
 -- Name: activity; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -169,10 +168,6 @@ ALTER TABLE public.file_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.file_id_seq OWNED BY public.file.id;
-
-
-
-
 
 
 --
@@ -615,6 +610,8 @@ COPY public.activity (id, name) FROM stdin;
 --
 
 COPY public.dependence (depends_on, dependent) FROM stdin;
+479	481
+35	30
 \.
 
 
@@ -880,6 +877,15 @@ COPY public.description (id, content, file_resources) FROM stdin;
 435	\N	src/main/resources/media/447/
 456	\N	src/main/resources/media/468/
 457	\N	src/main/resources/media/469/
+461	\N	src/main/resources/media/473/
+462	\N	src/main/resources/media/474/
+465	\N	src/main/resources/media/477/
+466	\N	src/main/resources/media/478/
+467	\N	src/main/resources/media/479/
+468	\N	src/main/resources/media/480/
+469	\N	src/main/resources/media/481/
+470	\N	src/main/resources/media/482/
+471	\N	src/main/resources/media/483/
 \.
 
 
@@ -913,26 +919,26 @@ COPY public.file (id, orig_filename, descriptionid, type) FROM stdin;
 --
 
 COPY public.man_hours (id, created_at, hours_spent, comment, taskid, projectid, activityid) FROM stdin;
-7	\N	\N	Test	43	41	1
-8	\N	\N	Test	43	41	1
-9	\N	\N	Test	43	41	1
-10	\N	\N	Test	43	41	1
 12	2024-04-01	02:00:00	Работа над задачей A	\N	\N	\N
 13	2024-04-01	01:15:00	Обеденный перерыв	\N	\N	\N
 14	2024-04-01	03:00:00	Работа над задачей B	\N	\N	\N
 15	2024-04-01	00:45:00	Вечернее подведение итогов дня	\N	\N	\N
 16	2023-06-16	01:30	Test	43	41	1
 17	2023-06-16	01:30	Test	43	41	1
-18	\N	01:30	Test	43	41	1
-19	\N	01:30	Tes2	43	41	3
-20	\N	01:30	Tes3	43	41	3
-21	\N	01:30	Tes2dgsda4	35	28	2
-22	\N	00:45	Tes23	43	41	3
-38	\N	00:45	Tes23	43	41	3
-39	\N	00:45	Tes23	43	41	3
-45	\N	00:45	Tes23	29	28	3
-47	\N	00:45	Tes23	29	28	3
 48	2024-05-10	00:45	Tes23	442	28	3
+18	2023-06-16	01:30	Test	43	41	1
+19	2023-06-16	01:30	Tes2	43	41	3
+20	2023-06-16	01:30	Tes3	43	41	3
+21	2023-06-16	01:30	Tes2dgsda4	35	28	2
+22	2023-06-16	00:45	Tes23	43	41	3
+38	2023-06-16	00:45	Tes23	43	41	3
+39	2023-06-16	00:45	Tes23	43	41	3
+45	2023-06-16	00:45	Tes23	29	28	3
+47	2023-06-16	00:45	Tes23	29	28	3
+7	2024-06-16	\N	Test	43	41	1
+8	2024-06-16	\N	Test	43	41	1
+9	2024-06-16	\N	Test	43	41	1
+10	2024-06-16	\N	Test	43	41	1
 \.
 
 
@@ -983,31 +989,40 @@ COPY public.task (id, name, status, start_data, descriptionid, parent, score, ge
 37	Разработка KMM по отрисовки задач	2	2023-06-16 23:52:52.584454+03	34	\N	0	1	2	\N	\N
 38	Test	2	2024-03-29 21:55:49.499668+03	35	\N	0	1	\N	\N	\N
 61	Тест7	2	2024-04-15 11:50:10.397819+03	53	\N	0	1	\N	\N	\N
+28	Приложение список дел	2	2023-06-16 11:57:11.168978+03	25	\N	16	1	\N	\N	\N
 57		1	2024-04-09 16:55:41.570365+03	\N	\N	\N	1	\N	\N	\N
 60	Тест7	2	2024-04-15 11:46:05.433221+03	52	\N	0	1	\N	\N	\N
 62	Проверка	\N	2024-04-23 10:40:36.633316+03	\N	\N	\N	1	\N	\N	\N
+59	Test24	2	2024-04-15 11:34:44.592853+03	51	28	16	2	3	\N	\N
 64	Test24	\N	2024-04-23 17:58:41.480446+03	\N	\N	10	1	3	\N	\N
 126	TestTask	2	2024-04-24 18:31:09.330375+03	115	122	10	2	1	\N	\N
 94	Test	2	2024-04-24 17:26:52.096177+03	83	\N	0	1	\N	\N	\N
+29	Разработать API	2	2023-06-16 12:04:29.661011+03	26	28	15	2	1	\N	\N
+33	Разработать дизайн	2	2023-06-16 12:34:05.15122+03	30	28	12	2	2	\N	\N
 95	Test	2	2024-04-24 17:26:52.372004+03	84	80	10	1	1	\N	\N
 63	Проверка	2	2024-04-23 10:43:13.094319+03	54	\N	10	1	\N	\N	\N
 66	Test12	2	2024-04-23 18:35:00.635972+03	56	63	10	1	3	\N	Ваня - лошара!
-28	Приложение список дел	2	2023-06-16 11:57:11.168978+03	25	\N	16	1	\N	\N	\N
-29	Разработать API	2	2023-06-16 12:04:29.661011+03	26	28	15	2	1	\N	\N
-59	Test24	2	2024-04-15 11:34:44.592853+03	51	28	16	2	3	\N	\N
-33	Разработать дизайн	2	2023-06-16 12:34:05.15122+03	30	28	12	2	2	\N	\N
+30	Разработать get запрос	2	2023-06-16 12:08:08.067671+03	27	29	9	3	1	\N	\N
 468	Test15	2	2024-05-07 12:42:46.526637+03	456	29	15	3	3	\N	Тестовое описание
-30	Разработать get запрос	2	2023-06-16 12:08:08.067671+03	27	29	3	3	1	\N	\N
 35	Разработать что-то	2	2023-06-16 13:45:10.080295+03	32	33	6	3	2	\N	\N
 41	ФК Черноморец	2	2024-04-04 15:43:34.844193+03	38	\N	0	1	\N	\N	\N
 43	Разработать прототип	2	2024-04-04 16:00:33.931895+03	40	41	0	2	3	\N	\N
-469	Test0084	2	2024-05-10 18:04:51.115719+03	457	\N	0	1	\N	\N	\N
-36	продумывние прототипа	2	2023-06-16 13:47:52.232819+03	33	33	12	3	2	\N	\N
-447	Test15	2	2024-05-06 16:34:13.258408+03	435	440	15	4	3	\N	Тестовое описание
+469	Test0084	2	2024-05-10 18:04:51.115719+03	457	\N	25	1	\N	\N	\N
+473	Test30	2	2024-05-13 10:54:05.28395+03	461	469	13	2	3	\N	Тестовое описание
 198	Test12	2	2024-04-29 16:59:21.195795+03	186	197	10	2	3	\N	Тестовое описание
 197	Test84	2	2024-04-29 16:57:47.881078+03	185	\N	10	1	\N	\N	\N
 275	Test0084	2	2024-05-02 15:02:35.440381+03	263	\N	0	1	\N	\N	\N
+479	TestDependeOn	2	2024-05-13 12:26:37.462797+03	467	469	12	2	3	\N	Тестовое описание
+481	TestDependeOn3	2	2024-05-13 12:41:10.161713+03	469	469	25	2	3	\N	Тестовое описание
+483	TestDependeOn5	2	2024-05-13 12:43:26.987125+03	471	469	6	2	3	\N	Тестовое описание
+474	Test10	2	2024-05-13 10:55:24.905995+03	462	473	13	3	3	\N	Тестовое описание
+477	Test13	2	2024-05-13 11:57:19.543298+03	465	474	13	4	3	\N	Тестовое описание
+480	TestDependeOn2	2	2024-05-13 12:39:40.916151+03	468	469	14	2	3	\N	Тестовое описание
+482	TestDependeOn4	2	2024-05-13 12:42:42.129164+03	470	469	6	2	3	\N	Тестовое описание
+478	Test13477	2	2024-05-13 12:01:29.945325+03	466	477	13	5	3	\N	Тестовое описание
+36	продумывние прототипа	2	2023-06-16 13:47:52.232819+03	33	33	12	3	2	\N	\N
 440	Test0007	2	2024-05-06 13:46:57.887226+03	428	29	15	3	3	\N	Тестовое описание
+447	Test15	2	2024-05-06 16:34:13.258408+03	435	440	15	4	3	\N	Тестовое описание
 441	Test0007	2	2024-05-06 13:47:25.076308+03	429	440	6	4	3	\N	Тестовое описание
 442	Test0007	2	2024-05-06 13:52:29.441572+03	430	440	6	4	3	\N	Тестовое описание
 \.
@@ -1022,6 +1037,7 @@ COPY public.type_of_activity (id, name) FROM stdin;
 2	Frontend
 4	UI/UX дизайн
 3	Тестирование
+5	Проектный менеджмент
 \.
 
 
@@ -1106,6 +1122,8 @@ COPY public.usersroleproject (id, userid, projectid, type_of_activityid, score, 
 439	\N	469	\N	\N	\N	\N
 440	1	469	\N	\N	\N	\N
 336	1	\N	\N	5	353	\N
+441	4	\N	\N	\N	59	\N
+442	1	\N	\N	\N	473	\N
 394	1	\N	\N	5	418	\N
 341	1	\N	\N	5	357	\N
 346	1	\N	\N	5	361	\N
@@ -1142,7 +1160,7 @@ SELECT pg_catalog.setval('public.activity_id_seq', 5, true);
 -- Name: description_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.description_id_seq', 457, true);
+SELECT pg_catalog.setval('public.description_id_seq', 471, true);
 
 
 --
@@ -1191,14 +1209,14 @@ SELECT pg_catalog.setval('public.status_id_seq', 1, false);
 -- Name: task_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.task_id_seq', 469, true);
+SELECT pg_catalog.setval('public.task_id_seq', 483, true);
 
 
 --
 -- Name: type_of_activity_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.type_of_activity_id_seq', 1, false);
+SELECT pg_catalog.setval('public.type_of_activity_id_seq', 2, true);
 
 
 --
@@ -1212,7 +1230,7 @@ SELECT pg_catalog.setval('public.users_id_seq', 9, true);
 -- Name: usersroleproject_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.usersroleproject_id_seq', 440, true);
+SELECT pg_catalog.setval('public.usersroleproject_id_seq', 442, true);
 
 
 --
@@ -1341,7 +1359,6 @@ ALTER TABLE ONLY public.users
 
 ALTER TABLE ONLY public.usersroleproject
     ADD CONSTRAINT usersroleproject_pk PRIMARY KEY (id);
-
 
 
 
