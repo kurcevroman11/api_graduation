@@ -2,6 +2,7 @@ package com.example.database.man_hours
 
 import com.example.database.man_hours.ManHoursModel.delete
 import com.example.database.man_hours.ManHoursModel.fetchById
+import com.example.database.man_hours.ManHoursModel.fetchByProjectId
 import com.example.database.man_hours.ManHoursModel.fetchSpecific
 import com.example.database.man_hours.ManHoursModel.insert
 import com.example.database.man_hours.ManHoursModel.update
@@ -11,6 +12,10 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import org.apache.poi.ss.usermodel.HorizontalAlignment
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import java.io.File
+import java.io.FileOutputStream
 
 class ManHoursController(val call: ApplicationCall) {
     suspend fun insertManHours(){
@@ -35,7 +40,6 @@ class ManHoursController(val call: ApplicationCall) {
         val taskId = call.parameters["id"]?.toInt()
 
         if(taskId != null){
-            fetchById(taskId)
             call.respond(fetchById(taskId))
         } else {
             call.respond(HttpStatusCode.BadRequest, "Invalid ID")
@@ -65,6 +69,72 @@ class ManHoursController(val call: ApplicationCall) {
         } else {
             call.respond(HttpStatusCode.BadRequest, "Invalid ID")
         }
+    }
+
+    suspend fun getReport() {
+        val manHoursId = call.parameters["projId"]?.toInt()
+
+        if(manHoursId != null){
+            call.respond(fetchByProjectId(manHoursId))
+        } else {
+            call.respond(HttpStatusCode.BadRequest, "Invalid ID")
+        }
+    }
+
+    // Функция для создания Excel файла
+    suspend fun createExcelFile(projectId: Int, outputPath: String) {
+        val data = fetchByProjectId(projectId)
+
+        // Группируем данные по taskName и createdAt
+        val taskNames = data.map { it.taskName }.distinct()
+        val createdDates = data.mapNotNull { it.createdAt }.distinct().sorted()
+
+        val dataMap = mutableMapOf<String, MutableMap<String, String?>>()
+        taskNames.forEach { taskName ->
+            dataMap[taskName] = mutableMapOf()
+            createdDates.forEach { date ->
+                dataMap[taskName]!![date] = data.find { it.taskName == taskName && it.createdAt == date }?.hoursSpent
+            }
+        }
+
+        val workbook = XSSFWorkbook()
+        val sheet = workbook.createSheet("Man Hours Report")
+
+        val headerCellStyle = workbook.createCellStyle().apply {
+            setFont(workbook.createFont().apply {
+                bold = true
+            })
+            alignment = HorizontalAlignment.CENTER
+        }
+
+        // Создаем строку заголовка
+        val headerRow = sheet.createRow(0)
+        headerRow.createCell(0).apply {
+            setCellValue("Task Name")
+            cellStyle = headerCellStyle
+        }
+
+        createdDates.forEachIndexed { index, date ->
+            val cell = headerRow.createCell(index + 1)
+            cell.setCellValue(date)
+            cell.cellStyle = headerCellStyle
+        }
+
+        // Заполняем данные
+        taskNames.forEachIndexed { rowIndex, taskName ->
+            val row = sheet.createRow(rowIndex + 1)
+            row.createCell(0).setCellValue(taskName)
+
+            createdDates.forEachIndexed { colIndex, date ->
+                val cell = row.createCell(colIndex + 1)
+                cell.setCellValue(dataMap[taskName]?.get(date))
+            }
+        }
+
+        FileOutputStream(File(outputPath)).use { fileOut ->
+            workbook.write(fileOut)
+        }
+        workbook.close()
     }
 
     suspend fun deleteManHours() {

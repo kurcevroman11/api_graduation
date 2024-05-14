@@ -1,6 +1,7 @@
 package com.example.database.man_hours
 
 import com.example.dao.DatabaseFactory.dbQuery
+import com.example.db.Task.TaskModel
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.jodatime.datetime
@@ -11,7 +12,7 @@ object ManHoursModel : Table("man_hours") {
     val createdAt = datetime("created_at").nullable()
     val hoursSpent = text("hours_spent")
     val comment = text("comment").nullable()
-    val taskId = integer("taskid").nullable()
+    val taskId = integer("taskid").references(TaskModel.id).nullable()
     val projectId = integer("projectid").nullable()
     val activityId = integer("activityid").nullable()
 
@@ -26,6 +27,15 @@ object ManHoursModel : Table("man_hours") {
         projectid = row[ManHoursModel.projectId],
         activityid = row[ManHoursModel.activityId]
     )
+
+    private fun resultRowToManHoursDTO(row: ResultRow): ManHoursReportDTO {
+        return ManHoursReportDTO(
+            id = row[ManHoursModel.id],
+            createdAt = row[ManHoursModel.createdAt].toString(),
+            hoursSpent = row[ManHoursModel.hoursSpent],
+            taskName = row[TaskModel.name] ?: ""
+        )
+    }
 
     val formatter = DateTimeFormat.forPattern("dd/MM/yyyy")
     suspend fun insert(manHoursDTO: ManHoursDTO) = dbQuery {
@@ -52,6 +62,12 @@ object ManHoursModel : Table("man_hours") {
             manHoursDTO.projectid?.let { projectid -> it[ManHoursModel.projectId] = projectid }
             manHoursDTO.activityid?.let { activityid -> it[ManHoursModel.activityId] = activityid }
         }
+    }
+
+    suspend fun fetchByProjectId(projectId: Int): List<ManHoursReportDTO> = dbQuery {
+        (ManHoursModel innerJoin TaskModel).slice(ManHoursModel.id, ManHoursModel.createdAt, ManHoursModel.hoursSpent, TaskModel.name)
+            .select { ManHoursModel.projectId eq projectId }
+            .map { resultRowToManHoursDTO(it) }
     }
 
     suspend fun fetchById(taskId: Int): List<ManHoursDTO> = dbQuery {
