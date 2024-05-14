@@ -35,6 +35,7 @@ object DependenceModel : Table("dependence") {
             .map(::resultRowToNode).singleOrNull()
     }
 
+    // Получение id задачи от которой зависит другая зависимая задача
     fun getDependencesInt(dependent: Int): Int? {
         return try {
             transaction {
