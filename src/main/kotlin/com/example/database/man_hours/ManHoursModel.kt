@@ -33,7 +33,8 @@ object ManHoursModel : Table("man_hours") {
             id = row[ManHoursModel.id],
             createdAt = row[ManHoursModel.createdAt].toString(),
             hoursSpent = row[ManHoursModel.hoursSpent],
-            taskName = row[TaskModel.name] ?: ""
+            taskName = row[TaskModel.name] ?: "",
+            taskId = row[TaskModel.id]
         )
     }
 
@@ -65,7 +66,13 @@ object ManHoursModel : Table("man_hours") {
     }
 
     suspend fun fetchByProjectId(projectId: Int): List<ManHoursReportDTO> = dbQuery {
-        (ManHoursModel innerJoin TaskModel).slice(ManHoursModel.id, ManHoursModel.createdAt, ManHoursModel.hoursSpent, TaskModel.name)
+        (ManHoursModel innerJoin TaskModel).slice(
+            ManHoursModel.id,
+            ManHoursModel.createdAt,
+            ManHoursModel.hoursSpent,
+            TaskModel.id,
+            TaskModel.name
+        )
             .select { ManHoursModel.projectId eq projectId }
             .map { resultRowToManHoursDTO(it) }
     }
