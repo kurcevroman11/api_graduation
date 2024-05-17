@@ -59,6 +59,8 @@ fun Application.UserRoleProjectController() {
                     val projId = call.parameters["projId"]?.toIntOrNull()
 
                     if (projId != null) {
+                        val tasks = scheduling(projId)
+
                         val workbook: Workbook = XSSFWorkbook()
                         val sheet: Sheet = workbook.createSheet("Tasks")
 
@@ -76,8 +78,6 @@ fun Application.UserRoleProjectController() {
                         }
 
                         val headerRow: Row = sheet.createRow(0)
-
-                        val tasks = scheduling(projId)
 
                         // Получение всех уникальных дат
                         val dates = tasks.flatMap { it.execution_date }.map {
@@ -104,15 +104,19 @@ fun Application.UserRoleProjectController() {
                             }
                         }
 
-                        // Запись в файл
-                        FileOutputStream("tasks.xlsx").use { outputStream ->
+                        // Создание временного файла
+                        val tempFile = createTempFile("tasks", ".xlsx")
+                        FileOutputStream(tempFile).use { outputStream ->
                             workbook.write(outputStream)
                         }
 
                         workbook.close()
 
                         // Отправляем файл клиенту
-                        call.respond(HttpStatusCode.OK)
+                        call.respondFile(tempFile)
+
+                        // Удаляем временный файл после отправки
+                        tempFile.delete()
                     } else {
                         call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
                     }
