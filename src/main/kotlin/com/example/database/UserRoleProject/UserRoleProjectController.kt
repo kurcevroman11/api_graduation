@@ -20,11 +20,12 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.apache.poi.ss.usermodel.FillPatternType
-import org.apache.poi.ss.usermodel.HorizontalAlignment
-import org.apache.poi.ss.usermodel.IndexedColors
+import org.apache.poi.ss.usermodel.*
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.ByteArrayOutputStream
+import java.io.FileOutputStream
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 fun Application.UserRoleProjectController() {
     routing {
@@ -58,70 +59,60 @@ fun Application.UserRoleProjectController() {
                     val projId = call.parameters["projId"]?.toIntOrNull()
 
                     if (projId != null) {
-                        val workbook = XSSFWorkbook()
-                        val sheet = workbook.createSheet("Sheet1")
+                        val workbook: Workbook = XSSFWorkbook()
+                        val sheet: Sheet = workbook.createSheet("Tasks")
 
-                        val cellStyle = workbook.createCellStyle()
-                        val color = IndexedColors.GREEN.getIndex()
-                        cellStyle.setFillForegroundColor(color)
-                        cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND)
-
-                        // Создание заголовка
-                        val headerRow = sheet.createRow(0)
-
-                        for (header in 1..120) {
-                            val cell = headerRow.createCell(header)
-                            cell.setCellValue(header.toString() + " день")
+                        val headerFont: Font = workbook.createFont().apply {
+                            bold = true
                         }
 
-                        // Метод, который выводить словарь, где ключ - название задача, а
-                        // значение кол-во дней выполнения задания
-                        val calendarPlan = UserRoleProjectModel.scheduling(projId)
+                        val headerCellStyle: CellStyle = workbook.createCellStyle().apply {
+                            setFont(headerFont)
+                        }
 
-                        val data = calendarPlan
+                        val dateCellStyle: CellStyle = workbook.createCellStyle().apply {
+                            fillForegroundColor = IndexedColors.LIGHT_GREEN.index
+                            fillPattern = FillPatternType.SOLID_FOREGROUND
+                        }
 
-                        for ((rowIndex, rowData) in data.withIndex()) {
+                        val headerRow: Row = sheet.createRow(0)
+
+                        val tasks = scheduling(projId)
+
+                        // Получение всех уникальных дат
+                        val dates = tasks.flatMap { it.execution_date }.map {
+                            LocalDate.parse(it.substring(0, 10), DateTimeFormatter.ISO_DATE)
+                        }.distinct().sorted()
+
+                        // Создание заголовков для дат
+                        dates.forEachIndexed { index, date ->
+                            val cell = headerRow.createCell(index + 1)
+                            cell.setCellValue(date.toString())
+                            cell.cellStyle = headerCellStyle
+                        }
+
+                        // Заполнение данных задач
+                        tasks.forEachIndexed { rowIndex, task ->
                             val row = sheet.createRow(rowIndex + 1)
+                            row.createCell(0).setCellValue(task.nameTask)
 
-                            val cell = row.createCell(0)
-                            cell.setCellValue(rowData.nameTask)
-                            for (i in 1..rowData.execution) {
-                                val cellExecution = row.createCell(i + rowData.start)
-                                cellExecution.setCellValue(" ")
-                                cellExecution.cellStyle = cellStyle
+                            task.execution_date.forEach { execDate ->
+                                val date = LocalDate.parse(execDate.substring(0, 10), DateTimeFormatter.ISO_DATE)
+                                val colIndex = dates.indexOf(date) + 1
+                                val cell = row.createCell(colIndex)
+                                cell.cellStyle = dateCellStyle
                             }
                         }
 
+                        // Запись в файл
+                        FileOutputStream("tasks.xlsx").use { outputStream ->
+                            workbook.write(outputStream)
+                        }
 
-                        val headerStyle = workbook.createCellStyle()
-                        headerStyle.alignment = HorizontalAlignment.CENTER
-                        val headerFont = workbook.createFont()
-                        headerFont.bold = true
-                        headerStyle.setFont(headerFont)
-                        val cell = headerRow.createCell(0)
-                        cell.cellStyle = headerStyle
-                        cell.setCellValue("Task/Day") // Установка значения ячейки
-                        sheet.setColumnWidth(0, 12 * 256) // Установка ширины столбцов
-                        headerRow.getCell(0).cellStyle = headerStyle
-
-
-                        sheet.setColumnWidth(0, 12 * 256) // Установка ширины столбца
-
-                        // Записываем файл в ByteArrayOutputStream
-                        val outputStream = ByteArrayOutputStream()
-                        workbook.write(outputStream)
                         workbook.close()
 
-                        val byteArray = outputStream.toByteArray()
-
                         // Отправляем файл клиенту
-                        call.response.header(
-                            HttpHeaders.ContentDisposition,
-                            ContentDisposition.Attachment.withParameter(ContentDisposition.Parameters.FileName, "project_$projId.xlsx").toString()
-                        )
-
-                        // Отправляем файл клиенту
-                        call.respondBytes(byteArray, ContentType.Application.OctetStream, HttpStatusCode.OK)
+                        call.respond(HttpStatusCode.OK)
                     } else {
                         call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
                     }

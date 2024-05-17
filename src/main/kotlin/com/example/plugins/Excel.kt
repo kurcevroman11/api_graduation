@@ -57,17 +57,17 @@ class Excel {
 
         val data = calendarPlan
 
-        for ((rowIndex, rowData) in data.withIndex()) {
-            val row = sheet.createRow(rowIndex + 1)
-
-            val cell = row.createCell(0)
-            cell.setCellValue(rowData.nameTask)
-            for (i in 1..rowData.execution) {
-                val cellExecution = row.createCell(i + rowData.start)
-                cellExecution.setCellValue(" ")
-                cellExecution.cellStyle = cellStyle
-            }
-        }
+//        for ((rowIndex, rowData) in data.withIndex()) {
+//            val row = sheet.createRow(rowIndex + 1)
+//
+//            val cell = row.createCell(0)
+//            cell.setCellValue(rowData.nameTask)
+//            for (i in 1..rowData.execution) {
+//                val cellExecution = row.createCell(i + rowData.start)
+//                cellExecution.setCellValue(" ")
+//                cellExecution.cellStyle = cellStyle
+//            }
+//        }
 
 
         val headerStyle = workbook.createCellStyle()
