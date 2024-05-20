@@ -2,7 +2,6 @@ package com.example.db.Task
 
 import com.example.database.Dependence.DependenceModel.getAllDependences
 import com.example.database.Dependence.DependenceModel.getDependences
-import com.example.database.Person.PersonDTO
 import com.example.database.Task.TaskByID
 import com.example.database.Task.TaskDependenceOn
 import com.example.database.file.FileModel
@@ -12,22 +11,24 @@ import com.example.db.Description.DescriptionModel
 import com.example.db.UserRoleProject.UserRoleProjectModel
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.jodatime.date
 import org.jetbrains.exposed.sql.jodatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 object TaskModel : Table("task") {
 
     val id = TaskModel.integer("id").autoIncrement()
     val name = TaskModel.varchar("name", 64)
     val status = TaskModel.integer("status").nullable()
-    private val start_date = TaskModel.datetime("start_data")
+    private val start_date = TaskModel.date("start_data")
     val scope = TaskModel.integer("score").nullable()
     private val description = TaskModel.integer("descriptionid").nullable()
     val parent = TaskModel.integer("parent").nullable()
@@ -555,13 +556,15 @@ object TaskModel : Table("task") {
         fun collectTasksRecursively(parentId: Int) {
             try {
                 transaction {
+                    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
                     // Получаем задачи, у которых parent равен parentId
                     val currentTasks = TaskModel.select { TaskModel.parent.eq(parentId) }.map {
                         TaskDTO(
                             it[TaskModel.id],
                             it[name],
                             it[status],
-                            dateTimeToString(it[start_date]?.toDateTime()!!),
+                            start_date = it[TaskModel.start_date].toString(),
                             it[scope],
                             it[description],
                             it[parent],
