@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 class DescriptionDTO(
     val id:Int?,
-    var content:String?,
+    var taskId:Int?,
     var file_resources: String?
 )

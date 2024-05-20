@@ -4,15 +4,14 @@ import com.example.database.Description.DescriptionForTask
 import com.example.db.Description.DescriptionDTO
 import java.io.File
 
-fun createMedia(name:String): Long {
-    val filePath = "src/main/resources/media/${name}/"
+fun createMedia(taskId: String): String {
+    val filePath = "src/main/resources/media/${taskId}/"
 
     // Создаем папку, если она не существует
     val directory = File(filePath)
     if (!directory.exists()) {
         directory.mkdirs()
     }
-    val discritionID = DescriptionForTask.insertandGetId(DescriptionDTO(null, null, filePath))
 
-    return discritionID
+    return filePath
 }

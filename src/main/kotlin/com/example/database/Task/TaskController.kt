@@ -5,6 +5,7 @@ import com.example.database.Dependence.DependenceModel.getDependenceForDelete
 import com.example.database.Dependence.DependenceModel.getDependences
 import com.example.database.UserRoleProject.UserRoleProjectDTO
 import com.example.database.man_hours.ManHoursModel
+import com.example.db.Description.DescriptionModel.insert
 import com.example.db.Task.TaskForId.insertandGetIdTask
 import com.example.db.Task.TaskModel.addUserCount
 import com.example.db.Task.TaskModel.collectAllTasks
@@ -109,26 +110,33 @@ fun Application.TaskContriller() {
                     val gson = Gson()
                     val taskId = call.parameters["id"]?.toInt()
 
-                    var taskOrSubtask = gson.fromJson(task, TaskDTO::class.java)
+                    if(taskId != null) {
+                        var taskOrSubtask = gson.fromJson(task, TaskDTO::class.java)
 
-                    // Увелечение поколения
-                    var taskParent = getTask(taskId!!)
-                    taskOrSubtask.generation = taskParent!!.generation!! + 1
+                        // Увелечение поколения
+                        var taskParent = getTask(taskId!!)
+                        taskOrSubtask.generation = taskParent!!.generation!! + 1
 
-                    val id = insertandGetIdTask(taskOrSubtask)
-                    taskOrSubtask.parent = taskId
-                    taskOrSubtask.description = createMedia(id.toString()).toInt()
-                    taskOrSubtask.status = 2
+                        val id = insertandGetIdTask(taskOrSubtask)
+                        taskOrSubtask.parent = taskId
+                        // Создание папки в которой будет храниться файлы
+                        insert(id.toInt())
+                        taskOrSubtask.status = 2
 
-                    updateTask(id.toInt(), taskOrSubtask)
+                        updateTask(id.toInt(), taskOrSubtask)
 
-                    updateTask(taskParent!!.id!!, taskParent!!)
+                        updateTask(taskParent!!.id!!, taskParent!!)
 
-                    val projectId = getParentId(id.toInt())
-                    recalculationScore(projectId, taskOrSubtask.generation!!)
-                    recalculationScoreWithDependence()
+                        val projectId = getParentId(id.toInt())
+                        recalculationScore(projectId, taskOrSubtask.generation!!)
+                        recalculationScoreWithDependence()
 
-                    call.respond(HttpStatusCode.Created)
+
+
+                        call.respond(HttpStatusCode.Created)
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
+                    }
                 }
 
                 // Создание проекта
@@ -145,7 +153,6 @@ fun Application.TaskContriller() {
 
                         val id = insertandGetIdTask(name)
 
-                        name.description = createMedia(id.toString()).toInt()
                         name.status = 2
                         name.generation = 1
                         name.scope = 0

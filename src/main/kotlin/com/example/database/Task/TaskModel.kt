@@ -30,7 +30,6 @@ object TaskModel : Table("task") {
     val status = TaskModel.integer("status").nullable()
     private val start_date = TaskModel.date("start_data")
     val scope = TaskModel.integer("score").nullable()
-    private val description = TaskModel.integer("descriptionid").nullable()
     val parent = TaskModel.integer("parent").nullable()
     val generation = TaskModel.integer("generation").nullable()
     private val typeofactivityid = TaskModel.integer("typeofactivityid").nullable()
@@ -48,7 +47,6 @@ object TaskModel : Table("task") {
                         it[status],
                         dateTimeToString(it[start_date]?.toDateTime()!!),
                         it[scope],
-                        it[description],
                         it[parent],
                         null,
                         it[generation],
@@ -74,7 +72,6 @@ object TaskModel : Table("task") {
                         it[status],
                         dateTimeToString(it[start_date]?.toDateTime()!!),
                         it[scope],
-                        it[description],
                         it[parent],
                         null,
                         it[generation],
@@ -123,7 +120,6 @@ object TaskModel : Table("task") {
                     it[status],
                     dateTimeToString(it[start_date]?.toDateTime()!!),
                     it[scope],
-                    it[description],
                     it[parent],
                     null,
                     it[generation],
@@ -149,7 +145,6 @@ object TaskModel : Table("task") {
                             it[status],
                             dateTimeToString(it[start_date]?.toDateTime()!!),
                             it[scope],
-                            it[description],
                             it[parent],
                             null,
                             it[generation],
@@ -190,7 +185,6 @@ object TaskModel : Table("task") {
                     status = taskModle[status],
                     start_date = dateTimeToString(taskModle[start_date]?.toDateTime()!!),
                     scope = taskModle[scope],
-                    description = taskModle[description],
                     parent = taskModle[parent],
                     userCount = null,
                     generation = taskModle[generation],
@@ -355,7 +349,6 @@ object TaskModel : Table("task") {
                 taskDTO.name?.let { name -> it[TaskModel.name] = name }
                 taskDTO.status?.let { status -> it[TaskModel.status] = status }
                 taskDTO.scope?.let { scope -> it[TaskModel.scope] = scope }
-                taskDTO.description?.let { description -> it[TaskModel.description] = description }
                 taskDTO.parent?.let { parent -> it[TaskModel.parent] = parent }
                 taskDTO.generation?.let { generation -> it[TaskModel.generation] = generation }
                 taskDTO.typeofactivityid?.let { typeofactivityid -> it[TaskModel.typeofactivityid] = typeofactivityid }
@@ -376,8 +369,7 @@ object TaskModel : Table("task") {
 
         UserRoleProjectModel.deleteURPByTask(id)
         val deletedRowCount = TaskModel.deleteWhere { TaskModel.id eq id }
-        FileModel.deleteFile(m_task?.description!!)
-        DescriptionModel.deleteDescription(m_task?.description!!)
+        DescriptionModel.deleteDescription(id!!)
         val tasks = getTaskAll()
         for (task in tasks) {
             var parent_id = task.parent
@@ -416,7 +408,6 @@ object TaskModel : Table("task") {
                         it[status],
                         dateTimeToString(it[start_date]?.toDateTime()!!),
                         it[scope],
-                        it[description],
                         it[parent],
                         null,
                         it[generation],
@@ -434,7 +425,6 @@ object TaskModel : Table("task") {
                             it[status],
                             dateTimeToString(it[start_date]?.toDateTime()!!),
                             it[scope],
-                            it[description],
                             it[parent],
                             null,
                             it[generation],
@@ -566,7 +556,6 @@ object TaskModel : Table("task") {
                             it[status],
                             start_date = it[TaskModel.start_date].toString(),
                             it[scope],
-                            it[description],
                             it[parent],
                             userCount = null,
                             generation = it[generation],
@@ -608,7 +597,6 @@ object TaskForId: IdTable<Long>("task") {
     private val status = TaskForId.integer("status").nullable()
     private val start_date = TaskForId.datetime("start_data").autoIncrement()
     private val scope = TaskForId.integer("score").nullable()
-    private val description = TaskForId.integer("descriptionid").nullable()
     private val parent = TaskForId.integer("parent").nullable()
     private val generation = TaskForId.integer("generation").nullable()
     private val typeofactivityid = TaskForId.integer("typeofactivityid").nullable()
@@ -625,7 +613,6 @@ object TaskForId: IdTable<Long>("task") {
                 taskDTO.name?.let { name -> it[TaskForId.name] = name }
                 taskDTO.status?.let { status -> it[TaskForId.status] = status }
                 taskDTO.scope?.let { scope -> it[TaskForId.scope] = scope }
-                taskDTO.description?.let { description -> it[TaskForId.description] = description }
                 taskDTO.parent?.let { parent -> it[TaskForId.parent] = parent }
                 taskDTO.generation?.let { generation -> it[TaskForId.generation] = generation }
                 taskDTO.typeofactivityid?.let { typeofactivityid -> it[TaskForId.typeofactivityid] = typeofactivityid }

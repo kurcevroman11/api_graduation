@@ -22,7 +22,6 @@ const val MAX_FILE_SIZE = 1048576 * 20 // 20МБ
 @Serializable
 data class DescriptionDTOFileDTO(
     val id:Int?,
-    val content:String?,
     val file_resources: List<FileDTO>?
 )
 
@@ -36,9 +35,9 @@ fun Application.DescriptionContriller() {
                 if (descriptionId != null) {
                     val description = getDescription(descriptionId)
                     if (description != null) {
-                        val list = getFileInTask(descriptionId)
+                        val list = getFileInTask(description.id!!)
 
-                        val descriptionString = DescriptionDTOFileDTO(descriptionId, description.content, list)
+                        val descriptionString = DescriptionDTOFileDTO(descriptionId, list)
                         call.respond(HttpStatusCode.OK, descriptionString)
                     } else {
                         call.respond(HttpStatusCode.BadRequest, "нет такого пользователя")
@@ -103,7 +102,7 @@ fun Application.DescriptionContriller() {
 
                                     logger.info { "Фото: $fileName, Name:$name, Type: $extension" }
 
-                                    val fileDTO = FileDTO(null, name , descriptionId, extension)
+                                    val fileDTO = FileDTO(null, name , descriptionDTO.id, extension)
 
                                     // Создание записи с в таблице file
                                     val fileNameServer = insertAndGetId(fileDTO)

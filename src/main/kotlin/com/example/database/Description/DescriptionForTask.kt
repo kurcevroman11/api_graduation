@@ -16,16 +16,16 @@ object DescriptionForTask: IdTable<Long>("description") {
 
     override val primaryKey: PrimaryKey = PrimaryKey(id)
 
-    fun insertandGetId(descriptionDTO: DescriptionDTO): Long {
-        var newDescriptionId: Long = 0
-        transaction {
-            addLogger(StdOutSqlLogger)
-
-            newDescriptionId = DescriptionForTask.insertAndGetId {
-                it[content] = descriptionDTO.content
-                it[file_resources] = descriptionDTO.file_resources
-            }.value
-        }
-        return newDescriptionId
-    }
+//    fun insertandGetId(descriptionDTO: DescriptionDTO): Long {
+//        var newDescriptionId: Long = 0
+//        transaction {
+//            addLogger(StdOutSqlLogger)
+//
+//            newDescriptionId = DescriptionForTask.insertAndGetId {
+//                it[content] = descriptionDTO.content
+//                it[file_resources] = descriptionDTO.file_resources
+//            }.value
+//        }
+//        return newDescriptionId
+//    }
 }
