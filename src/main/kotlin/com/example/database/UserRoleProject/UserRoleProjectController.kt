@@ -165,9 +165,6 @@ fun Application.UserRoleProjectController() {
                                 clearFieldCreateProject(getData.projectid!!)
                                 // Привязка пользователя к задаче
                             } else if(getData.current_task_id != null) {
-                                // Узнаем id проекта
-                                val projId = getParentId(getData.current_task_id)
-                                getData.projectid = projId
                                 linkinUserRootTask(getData)
                                 call.respond(HttpStatusCode.Created)
                             }
