@@ -1,6 +1,5 @@
 package com.example.plugins
 
-import com.example.database.Description.DescriptionForTask
 import com.example.db.Description.DescriptionDTO
 import java.io.File
 

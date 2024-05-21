@@ -1,7 +1,11 @@
 package com.example.db.UserRoleProject
 
 import com.example.database.UserRoleProject.UserRoleProjectDTO
+import com.example.db.Task.TaskModel.collectAllTasks
+import com.example.db.Task.TaskModel.getParentId
 import com.example.db.UserRoleProject.UserRoleProjectModel.clearFieldCreateProject
+import com.example.db.UserRoleProject.UserRoleProjectModel.deleteFromProject
+import com.example.db.UserRoleProject.UserRoleProjectModel.deleteFromTask
 import com.example.db.UserRoleProject.UserRoleProjectModel.deleteURP
 import com.example.db.UserRoleProject.UserRoleProjectModel.fetchUserInProj
 import com.example.db.UserRoleProject.UserRoleProjectModel.getALLUserProject
@@ -14,6 +18,8 @@ import com.example.db.UserRoleProject.UserRoleProjectModel.updateURP
 import com.example.pluginsimport.Excel
 import com.google.gson.Gson
 import io.ktor.http.*
+import io.ktor.http.HttpStatusCode.Companion.OK
+import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -156,8 +162,12 @@ fun Application.UserRoleProjectController() {
                                 }
                                 call.respond(HttpStatusCode.Created)
                                 // Очистка поля creater_project, так как не только создатель привязан к проекту
-                                clearFieldCreateProject(getData.projectid)
+                                clearFieldCreateProject(getData.projectid!!)
+                                // Привязка пользователя к задаче
                             } else if(getData.current_task_id != null) {
+                                // Узнаем id проекта
+                                val projId = getParentId(getData.current_task_id)
+                                getData.projectid = projId
                                 linkinUserRootTask(getData)
                                 call.respond(HttpStatusCode.Created)
                             }
@@ -188,6 +198,40 @@ fun Application.UserRoleProjectController() {
                     val URPId = call.parameters["id"]?.toIntOrNull()
                     if (URPId != null) {
                         call.respond(deleteURP(URPId), "Delete")
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
+                    }
+                }
+
+                // Удаление пользователя из проекта
+                delete("fromproject/{projectId}/{personid}") {
+                    val personId = call.parameters["personid"]?.toIntOrNull()
+                    val projectId = call.parameters["projectId"]?.toIntOrNull()
+                    if (personId != null && projectId != null) {
+                        val tasks = collectAllTasks(projectId)
+                        if(tasks.isNotEmpty()) {
+                            // Сначала удаляем пользователей из задачи
+                            tasks.forEach { task ->
+                                deleteFromTask(personId, task.id!!)
+                            }
+                            // Затем из проекта
+                            deleteFromProject(personId, projectId)
+                        } else {
+                            // Удаление если у проекта не было задач
+                            deleteFromProject(personId, projectId)
+                        }
+                        call.respond(OK, "Delete")
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
+                    }
+                }
+
+                // Удаление пользователя из задачи
+                delete("fromtask/{taskId}/{personid}") {
+                    val personId = call.parameters["personid"]?.toIntOrNull()
+                    val taskId = call.parameters["taskId"]?.toIntOrNull()
+                    if (personId != null && taskId != null) {
+                        call.respond(deleteFromTask(personId, taskId), "Delete")
                     } else {
                         call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
                     }

@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 class UserRoleProjectDTO(
     val id: Int? = null,
     var userid: MutableList<Int> = mutableListOf(),
-    val projectid: Int? = null,
+    var projectid: Int? = null,
     val type_of_activityid: Int? = null,
     val score: Int? = null,
     val current_task_id: Int? = null,
