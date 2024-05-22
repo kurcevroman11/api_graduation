@@ -99,19 +99,21 @@ class ManHoursController(val call: ApplicationCall) {
         return "%02d:%02d".format(hours, minutes)
     }
 
+
     fun aggregateHoursSpent(manHours: List<ManHoursReportDTO>): List<ManHoursReportDTO> {
         return manHours
             .filter { it.createdAt != null && it.hoursSpent != null }
-            .groupBy { OffsetDateTime.parse(it.createdAt).toLocalDate().toString() }
-            .map { (date, entries) ->
+            .groupBy { Pair(OffsetDateTime.parse(it.createdAt).toLocalDate().toString(), it.taskId) }
+            .map { (key, entries) ->
+                val (date, taskId) = key
                 val totalDuration = entries
                     .map { parseDuration(it.hoursSpent) }
                     .reduce { acc, duration -> acc.plus(duration) }
                 ManHoursReportDTO(
-                    id = entries.first().id, // или другой логики для id
+                    id = entries.first().id, // Можно изменить логику определения id
                     createdAt = date,
                     hoursSpent = formatDuration(totalDuration),
-                    taskId = entries.first().taskId,
+                    taskId = taskId,
                     taskName = entries.first().taskName
                 )
             }
