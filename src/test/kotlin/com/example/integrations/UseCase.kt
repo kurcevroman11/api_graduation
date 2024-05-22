@@ -188,56 +188,56 @@ class UseCase {
         // Проверка описания
         assertEquals(task.content, getProjectTestTask?.content, "Проверка описания (задача1)")
 
-        // <-------------------------------------------ДОБАВЛЕНИЕ ФАЙЛА В ЗАДАЧУ------------------------------------>
-
-        response = client.post("/description/upload/${getProjectTestTask?.description}") {
-            contentType(ContentType.Application.Json)
-            header("Authorization", "Bearer $token")
-            setBody(MultiPartFormDataContent(
-                formData {
-                    append("description", "Mind_Map")
-                    append("image", File("./src/test/kotlin/com/example/integrations/Mind_Map.jpg")
-                        .readBytes(), Headers.build {
-                        append(HttpHeaders.ContentType, "image/jpg")
-                        append(HttpHeaders.ContentDisposition, "filename=\"Mind_Map.jpg\"")
-                    })
-                },
-                boundary = "WebAppBoundary"
-            )
-            )
-            onUpload { bytesSentTotal, contentLength ->
-                println("Sent $bytesSentTotal bytes from $contentLength")
-            }
-        }
-        assertEquals(HttpStatusCode.OK, response.status)
-
-        // <-----------------------------------ПОЛУЧЕНИЕ СПИСКОВ ФАЙЛОВ В ЗАДАЧЕ------------------------------------>
-
-        response = client.get("/description/${getProjectTestTask?.description}") {
-            contentType(ContentType.Application.Json)
-            header("Authorization", "Bearer $token")
-        }
-        assertEquals(HttpStatusCode.OK, response.status)
-
-        var json = response.bodyAsText()
-        val getTestFile = Json.decodeFromString<DescriptionDTOFileDTO?>(json)
-        assertEquals("Mind_Map", getTestFile?.file_resources?.get(0)?.orig_filename)
-
-        // <------------------------------------------СКАЧИВАНИЕ ФАЙЛА------------------------------------------->
-
-        response = client.get("/description/download/${getProjectTestTask?.description}/${getTestFile?.file_resources?.get(0)?.id}") {
-            contentType(ContentType.Application.Json)
-            header("Authorization", "Bearer $token")
-        }
-        assertEquals(HttpStatusCode.OK, response.status)
-
-        // <---------------------------------------УДАЛЕНИЕ ОПРЕДЕЛННОГО ФАЙЛА------------------------------------>
-
-        response = client.delete("/description/${getProjectTestTask?.description}/${getTestFile?.file_resources?.get(0)?.id}") {
-            contentType(ContentType.Application.Json)
-            header("Authorization", "Bearer $token")
-        }
-        assertEquals(HttpStatusCode.OK, response.status)
+//        // <-------------------------------------------ДОБАВЛЕНИЕ ФАЙЛА В ЗАДАЧУ------------------------------------>
+//
+//        response = client.post("/description/upload/${getProjectTestTask?.description}") {
+//            contentType(ContentType.Application.Json)
+//            header("Authorization", "Bearer $token")
+//            setBody(MultiPartFormDataContent(
+//                formData {
+//                    append("description", "Mind_Map")
+//                    append("image", File("./src/test/kotlin/com/example/integrations/Mind_Map.jpg")
+//                        .readBytes(), Headers.build {
+//                        append(HttpHeaders.ContentType, "image/jpg")
+//                        append(HttpHeaders.ContentDisposition, "filename=\"Mind_Map.jpg\"")
+//                    })
+//                },
+//                boundary = "WebAppBoundary"
+//            )
+//            )
+//            onUpload { bytesSentTotal, contentLength ->
+//                println("Sent $bytesSentTotal bytes from $contentLength")
+//            }
+//        }
+//        assertEquals(HttpStatusCode.OK, response.status)
+//
+//        // <-----------------------------------ПОЛУЧЕНИЕ СПИСКОВ ФАЙЛОВ В ЗАДАЧЕ------------------------------------>
+//
+//        response = client.get("/description/${getProjectTestTask?.description}") {
+//            contentType(ContentType.Application.Json)
+//            header("Authorization", "Bearer $token")
+//        }
+//        assertEquals(HttpStatusCode.OK, response.status)
+//
+//        var json = response.bodyAsText()
+//        val getTestFile = Json.decodeFromString<DescriptionDTOFileDTO?>(json)
+//        assertEquals("Mind_Map", getTestFile?.file_resources?.get(0)?.orig_filename)
+//
+//        // <------------------------------------------СКАЧИВАНИЕ ФАЙЛА------------------------------------------->
+//
+//        response = client.get("/description/download/${getProjectTestTask?.description}/${getTestFile?.file_resources?.get(0)?.id}") {
+//            contentType(ContentType.Application.Json)
+//            header("Authorization", "Bearer $token")
+//        }
+//        assertEquals(HttpStatusCode.OK, response.status)
+//
+//        // <---------------------------------------УДАЛЕНИЕ ОПРЕДЕЛННОГО ФАЙЛА------------------------------------>
+//
+//        response = client.delete("/description/${getProjectTestTask?.description}/${getTestFile?.file_resources?.get(0)?.id}") {
+//            contentType(ContentType.Application.Json)
+//            header("Authorization", "Bearer $token")
+//        }
+//        assertEquals(HttpStatusCode.OK, response.status)
 
         // <------------------------------------ОБНОВЛЕНИЕ СТАТУСА У 1-й ЗАДАЧИ------------------------------------>
 

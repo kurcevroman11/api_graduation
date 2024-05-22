@@ -368,8 +368,13 @@ object TaskModel : Table("task") {
         var m_task = getTask(id)
 
         UserRoleProjectModel.deleteURPByTask(id)
+        // Если проект то удалять описание не нужно так нет id
+        if(m_task?.generation != 1) {
+            DescriptionModel.deleteDescription(id!!)
+        }
+
         val deletedRowCount = TaskModel.deleteWhere { TaskModel.id eq id }
-        DescriptionModel.deleteDescription(id!!)
+
         val tasks = getTaskAll()
         for (task in tasks) {
             var parent_id = task.parent
