@@ -19,7 +19,6 @@ SET row_security = off;
 SET default_tablespace = '';
 
 
-
 --
 -- Name: activity; Type: TABLE; Schema: public; Owner: postgres
 --
@@ -170,8 +169,6 @@ ALTER TABLE public.file_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.file_id_seq OWNED BY public.file.id;
-
-
 
 --
 -- Name: man_hours; Type: TABLE; Schema: public; Owner: postgres
@@ -638,8 +635,6 @@ COPY public.excel_file (id, name_plan, path, projectid) FROM stdin;
 COPY public.file (id, orig_filename, descriptionid, type) FROM stdin;
 \.
 
-
-
 --
 -- Data for Name: man_hours; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -730,6 +725,7 @@ COPY public.users (id, username, password) FROM stdin;
 --
 
 COPY public.usersroleproject (id, userid, projectid, type_of_activityid, score, current_task_id, creater_project) FROM stdin;
+482	1	\N	\N	5	521	\N
 \.
 
 
@@ -760,7 +756,7 @@ SELECT pg_catalog.setval('public.activity_id_seq', 5, true);
 -- Name: description_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.description_id_seq', 488, true);
+SELECT pg_catalog.setval('public.description_id_seq', 505, true);
 
 
 --
@@ -774,21 +770,21 @@ SELECT pg_catalog.setval('public.excel_file_id_seq', 1, false);
 -- Name: file_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.file_id_seq', 51, true);
+SELECT pg_catalog.setval('public.file_id_seq', 56, true);
 
 
 --
 -- Name: man_hours_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.man_hours_id_seq', 50, true);
+SELECT pg_catalog.setval('public.man_hours_id_seq', 61, true);
 
 
 --
 -- Name: person_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.person_id_seq', 103, true);
+SELECT pg_catalog.setval('public.person_id_seq', 107, true);
 
 
 --
@@ -809,7 +805,7 @@ SELECT pg_catalog.setval('public.status_id_seq', 1, false);
 -- Name: task_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.task_id_seq', 500, true);
+SELECT pg_catalog.setval('public.task_id_seq', 523, true);
 
 
 --
@@ -830,14 +826,14 @@ SELECT pg_catalog.setval('public.users_id_seq', 9, true);
 -- Name: usersroleproject_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.usersroleproject_id_seq', 456, true);
+SELECT pg_catalog.setval('public.usersroleproject_id_seq', 482, true);
 
 
 --
 -- Name: usser_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.usser_id_seq', 105, true);
+SELECT pg_catalog.setval('public.usser_id_seq', 109, true);
 
 
 --
@@ -870,8 +866,6 @@ ALTER TABLE ONLY public.excel_file
 
 ALTER TABLE ONLY public.file
     ADD CONSTRAINT file_pkey PRIMARY KEY (id);
-
-
 
 
 --
@@ -962,8 +956,6 @@ ALTER TABLE ONLY public.usersroleproject
     ADD CONSTRAINT usersroleproject_pk PRIMARY KEY (id);
 
 
-
-
 --
 -- Name: idx_unique_dependence; Type: INDEX; Schema: public; Owner: postgres
 --
@@ -992,7 +984,7 @@ ALTER TABLE ONLY public.excel_file
 --
 
 ALTER TABLE ONLY public.file
-    ADD CONSTRAINT file_description_fk FOREIGN KEY (descriptionid) REFERENCES public.description(id);
+    ADD CONSTRAINT file_description_fk FOREIGN KEY (descriptionid) REFERENCES public.description(id) ON DELETE CASCADE;
 
 
 --
