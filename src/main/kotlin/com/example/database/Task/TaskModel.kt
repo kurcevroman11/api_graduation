@@ -447,6 +447,51 @@ object TaskModel : Table("task") {
         }
     }
 
+    // Получение id проекта
+    fun getParentName(taskId: Int): String {
+        return try {
+            transaction {
+                var task = TaskModel.select { TaskModel.id.eq(taskId) }.map {
+                    TaskDTO(
+                        it[TaskModel.id],
+                        it[name],
+                        it[status],
+                        dateTimeToString(it[start_date]?.toDateTime()!!),
+                        it[scope],
+                        it[parent],
+                        null,
+                        it[generation],
+                        it[content],
+                        it[typeofactivityid],
+                        it[position],
+                    )
+                }.single()
+
+                while (task.generation != 1) {
+                    task = TaskModel.select { TaskModel.id.eq(task.parent!!) }.map {
+                        TaskDTO(
+                            it[TaskModel.id],
+                            it[name],
+                            it[status],
+                            dateTimeToString(it[start_date]?.toDateTime()!!),
+                            it[scope],
+                            it[parent],
+                            null,
+                            it[generation],
+                            it[content],
+                            it[typeofactivityid],
+                            it[position],
+                        )
+                    }.single()
+                }
+
+                task.name ?: ""
+            }
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
     suspend fun recalculationScoreWithDependence() {
         var depenc = getAllDependences()
         depenc = depenc.reversed()

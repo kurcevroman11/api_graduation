@@ -9,6 +9,7 @@ import com.example.db.UserRoleProject.UserRoleProjectModel.deleteFromTask
 import com.example.db.UserRoleProject.UserRoleProjectModel.deleteURP
 import com.example.db.UserRoleProject.UserRoleProjectModel.fetchUserInProj
 import com.example.db.UserRoleProject.UserRoleProjectModel.getALLUserProject
+import com.example.db.UserRoleProject.UserRoleProjectModel.getNotification
 import com.example.db.UserRoleProject.UserRoleProjectModel.getTask_executors
 import com.example.db.UserRoleProject.UserRoleProjectModel.getUserProject
 import com.example.db.UserRoleProject.UserRoleProjectModel.insert
@@ -59,6 +60,12 @@ fun Application.UserRoleProjectController() {
                     } else {
                         call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
                     }
+                }
+
+                get("/notification") {
+                    val principle = call.principal<JWTPrincipal>()
+                    val userId = principle!!.payload.getClaim("userId").asInt()
+                    call.respond(HttpStatusCode.OK, getNotification(userId))
                 }
 
                 get("/excel/{projId}") {
