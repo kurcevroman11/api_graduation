@@ -121,7 +121,7 @@ fun Application.TaskContriller() {
                         taskOrSubtask.parent = taskId
                         // Создание папки в которой будет храниться файлы
                         insert(id.toInt())
-                        taskOrSubtask.status = 2
+                        taskOrSubtask.status = 3 // В ожидании
 
                         updateTask(id.toInt(), taskOrSubtask)
 
@@ -150,14 +150,10 @@ fun Application.TaskContriller() {
 
                     if (role == "Админ" || role == "Проект-менеджер") {
                         val name = gson.fromJson(task, TaskDTO::class.java)
-
-                        val id = insertandGetIdTask(name)
-
-                        name.status = 2
                         name.generation = 1
                         name.scope = 0
 
-                        updateTask(id.toInt(), name)
+                        val id = insertandGetIdTask(name)
 
                         val userRoleProjectDTO: UserRoleProjectDTO? = UserRoleProjectDTO(
                             creater_project = userId.toInt(),

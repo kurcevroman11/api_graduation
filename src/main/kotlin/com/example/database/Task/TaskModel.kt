@@ -40,21 +40,41 @@ object TaskModel : Table("task") {
     // Полчение не/выполненных задач
     fun getDownTask(projectId: Int, statusID: Int): List<TaskDTO> {
         return try {
-            transaction {
-                TaskModel.select { TaskModel.parent.eq(projectId) and (TaskModel.status eq statusID) }.map {
-                    TaskDTO(
-                        it[TaskModel.id],
-                        it[name],
-                        it[status],
-                        dateTimeToString(it[start_date]?.toDateTime()!!),
-                        it[scope],
-                        it[parent],
-                        null,
-                        it[generation],
-                        it[content],
-                        it[typeofactivityid],
-                        it[position],
-                    )
+            if(statusID == 1) {
+                transaction {
+                    TaskModel.select { TaskModel.parent.eq(projectId) and (TaskModel.status eq statusID) }.map {
+                        TaskDTO(
+                            it[TaskModel.id],
+                            it[name],
+                            it[status],
+                            dateTimeToString(it[start_date]?.toDateTime()!!),
+                            it[scope],
+                            it[parent],
+                            null,
+                            it[generation],
+                            it[content],
+                            it[typeofactivityid],
+                            it[position],
+                        )
+                    }
+                }
+            } else {
+                transaction {
+                    TaskModel.select { TaskModel.parent.eq(projectId) and (TaskModel.status eq 2) or (TaskModel.status eq 3)}.map {
+                        TaskDTO(
+                            it[TaskModel.id],
+                            it[name],
+                            it[status],
+                            dateTimeToString(it[start_date]?.toDateTime()!!),
+                            it[scope],
+                            it[parent],
+                            null,
+                            it[generation],
+                            it[content],
+                            it[typeofactivityid],
+                            it[position],
+                        )
+                    }
                 }
             }
         } catch (e: Exception) {
