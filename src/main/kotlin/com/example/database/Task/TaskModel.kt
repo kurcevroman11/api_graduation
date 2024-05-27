@@ -350,7 +350,6 @@ object TaskModel : Table("task") {
                 taskDTO.status?.let { status -> it[TaskModel.status] = status }
                 taskDTO.scope?.let { scope -> it[TaskModel.scope] = scope }
                 taskDTO.parent?.let { parent -> it[TaskModel.parent] = parent }
-                taskDTO.generation?.let { generation -> it[TaskModel.generation] = generation }
                 taskDTO.typeofactivityid?.let { typeofactivityid -> it[TaskModel.typeofactivityid] = typeofactivityid }
                 taskDTO.position?.let { position -> it[TaskModel.position] = position }
                 taskDTO.content?.let { content -> it[TaskModel.content] = content }
