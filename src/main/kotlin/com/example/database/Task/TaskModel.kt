@@ -6,6 +6,7 @@ import com.example.database.Task.TaskByID
 import com.example.database.Task.TaskDependenceOn
 import com.example.database.file.FileModel
 import com.example.database.man_hours.ManHoursDTO
+import com.example.database.man_hours.ManHoursModel.deleteByTask
 import com.example.database.man_hours.ManHoursModel.fetchById
 import com.example.db.Description.DescriptionModel
 import com.example.db.UserRoleProject.UserRoleProjectModel
@@ -363,7 +364,7 @@ object TaskModel : Table("task") {
         return HttpStatusCode.OK
     }
 
-    fun deleteTaskInternal(id: Int): Int {
+    suspend fun deleteTaskInternal(id: Int): Int {
         var m_task = getTask(id)
 
         UserRoleProjectModel.deleteURPByTask(id)
@@ -372,22 +373,22 @@ object TaskModel : Table("task") {
             DescriptionModel.deleteDescription(id!!)
         }
 
-        val deletedRowCount = TaskModel.deleteWhere { TaskModel.id eq id }
-
         val tasks = getTaskAll()
         for (task in tasks) {
             var parent_id = task.parent
             if (parent_id != null && parent_id == id) {
+                deleteByTask(task.id!!)
                 deleteTaskInternal(task.id!!)
             }
         }
+        val deletedRowCount = TaskModel.deleteWhere { TaskModel.id eq id }
         return deletedRowCount
     }
 
-    fun deletTask(id: Int): HttpStatusCode {
+     fun deletTask(id: Int): HttpStatusCode {
         if (id != null) {
             transaction {
-                val deletedRowCount = deleteTaskInternal(id)
+                val deletedRowCount = runBlocking { deleteTaskInternal(id) }
                 if (deletedRowCount > 0) {
                     return@transaction HttpStatusCode.NoContent
                 } else {
