@@ -1,5 +1,8 @@
 package com.example.db.Task
 
+import com.example.database.Dependence.Dependence
+import com.example.database.Dependence.DependenceController
+import com.example.database.Dependence.DependenceModel
 import com.example.database.Dependence.DependenceModel.getAllDependences
 import com.example.database.Dependence.DependenceModel.getDependenceForDelete
 import com.example.database.Dependence.DependenceModel.getDependences
@@ -131,8 +134,6 @@ fun Application.TaskContriller() {
                         recalculationScore(projectId, taskOrSubtask.generation!!)
                         recalculationScoreWithDependence()
 
-
-
                         call.respond(HttpStatusCode.Created)
                     } else {
                         call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
@@ -174,10 +175,28 @@ fun Application.TaskContriller() {
                 put("update/{id}") {
                     val taskId = call.parameters["id"]?.toIntOrNull()
 
-                    val task = call.receive<String>()
-                    val gson = Gson()
-                    val taskDTO = gson.fromJson(task, TaskDTO::class.java)
-                    call.respond(updateTask(taskId!!, taskDTO))
+                    if (taskId != null) {
+                        val task = call.receive<String>()
+                        val gson = Gson()
+                        val taskDTO = gson.fromJson(task, TaskDTO::class.java)
+                        val taskBeforeUpdate = getTask(taskId)
+
+                        call.respond(updateTask(taskId!!, taskDTO))
+
+                        val dependence = getDependenceForDelete(taskId)
+                        if(dependence != null) {
+                            DependenceModel.recalculationDependence(
+                                dependent = dependence.dependent,
+                                Dependence(
+                                    dependent = dependence.dependent,
+                                    dependsOn = dependence.dependsOn,
+                                ),
+                                updateTask = taskBeforeUpdate
+                            )
+                        }
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
+                    }
                 }
 
                 //Удаление задачи

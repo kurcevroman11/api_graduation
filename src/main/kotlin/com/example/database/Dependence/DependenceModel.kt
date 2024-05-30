@@ -1,7 +1,11 @@
 package com.example.database.Dependence
 
 import com.example.dao.DatabaseFactory.dbQuery
+import com.example.db.Task.TaskDTO
 import com.example.db.Task.TaskModel
+import com.example.db.Task.TaskModel.getTask
+import com.example.db.Task.TaskModel.recalculationScoreWithDependence
+import com.example.db.Task.TaskModel.updateTask
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -60,4 +64,51 @@ object DependenceModel : Table("dependence") {
         }
     }
 
+
+    suspend fun recalculationDependence(dependent: Int, dependenceDTO: Dependence, updateTask: TaskDTO? = null) {
+        var dependentTaskDTO = getTask(dependent!!)
+
+        // Проверка нет ли у зависимой задачи ее зависимая задача если так
+        // то нужно сделать вычитание у зависимой задачи чтобы получить ее начальное значение
+
+        // Извленчение задачи от которой зависит dependentTaskDTO
+        var dependsOnTaskDTO = getTask(dependenceDTO.dependsOn!!)
+        if(dependenceDTO != null) {
+            // Вычитание задачи до обновление задачи от которой зависим
+            if(updateTask != null) {
+                dependentTaskDTO?.scope = dependentTaskDTO?.scope!! - updateTask?.scope!!
+                updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
+            } else {
+//                if()
+//                dependentTaskDTO2?.scope = dependentTaskDTO2?.scope!! - dependentTaskDTO?.scope!!
+//                // Обновление
+//                updateTask(dependentTaskDTO2.id!!, dependentTaskDTO2)
+            }
+        }
+
+
+
+
+        dependsOnTaskDTO = getTask(dependenceDTO.dependsOn!!)
+        dependentTaskDTO = getTask(dependent!!)
+        // Суммирование время выполнения задачи
+        dependentTaskDTO?.scope = dependsOnTaskDTO?.scope!! + dependentTaskDTO?.scope!!
+        // Обновление
+        updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
+
+        // Перерачсчт если зависимая задача имела зависимости для других задач
+        if(dependentTaskDTO?.id != null) {
+            var dependentId2 = getDependenceForDelete(dependenceDTO.dependent)
+            while(dependentId2 != null) {
+                var dependentTaskDTO2 = getTask(dependentId2.dependent!!)
+
+                dependentTaskDTO2?.scope = dependentTaskDTO2?.scope!! + dependentTaskDTO?.scope!!
+                // Обновление
+                updateTask(dependentTaskDTO2.id!!, dependentTaskDTO2)
+
+                dependentId2 = getDependenceForDelete(dependentId2.dependent)
+            }
+            recalculationScoreWithDependence()
+        }
+    }
 }
