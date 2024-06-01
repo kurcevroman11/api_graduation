@@ -5,6 +5,7 @@ import com.example.database.Dependence.DependenceController
 import com.example.database.Dependence.DependenceModel
 import com.example.database.Dependence.DependenceModel.getAllDependences
 import com.example.database.Dependence.DependenceModel.getDependenceForDelete
+import com.example.database.Dependence.DependenceModel.getDependenceForDeleteRecurse
 import com.example.database.Dependence.DependenceModel.getDependences
 import com.example.database.UserRoleProject.UserRoleProjectDTO
 import com.example.database.man_hours.ManHoursModel
@@ -183,7 +184,7 @@ fun Application.TaskContriller() {
 
                         call.respond(updateTask(taskId!!, taskDTO))
 
-                        val dependence = getDependenceForDelete(taskId)
+                        var dependence = getDependences(taskId)
                         if(dependence != null) {
                             DependenceModel.recalculationDependence(
                                 dependent = dependence.dependent,
@@ -193,6 +194,18 @@ fun Application.TaskContriller() {
                                 ),
                                 updateTask = taskBeforeUpdate
                             )
+                        } else {
+                            dependence = getDependenceForDelete(taskId)
+                            if(dependence != null) {
+                                DependenceModel.recalculationDependence(
+                                    dependent = dependence.dependent,
+                                    Dependence(
+                                        dependent = dependence.dependent,
+                                        dependsOn = dependence.dependsOn,
+                                    ),
+                                    updateTask = taskBeforeUpdate
+                                )
+                            }
                         }
                     } else {
                         call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
@@ -209,32 +222,30 @@ fun Application.TaskContriller() {
                         ManHoursModel.deleteByTask(taskId)
 
                         //Перерасчет с времени с учетом зависимости
-                        val dependence = getDependenceForDelete(taskId)
-                        if(dependence != null) {
-                            var dependentId2 = getDependenceForDelete(dependence?.dependent!!)
-                            if(dependentId2 != null) {
-                                var dependentTaskDTO2 = getTask(dependentId2?.dependent!!)
-                                while(dependentId2 != null) {
-                                    // Удаляемая привязанная задача
-                                    val dependentOnTaskDTO = getTask(dependentId2.dependsOn!!)
-                                    dependentTaskDTO2?.scope = dependentTaskDTO2?.scope!! - dependentOnTaskDTO?.scope!!
-
-                                    // Обновление
-                                    updateTask(dependentTaskDTO2.id!!, dependentTaskDTO2)
-
-                                    // Возвраещается DependeOn
-                                    dependentId2 = getDependenceForDelete(dependentId2.dependent)
-                                }
-                            } else {
-                                val dependentOnTaskDTO = getTask(dependence?.dependsOn!!)
-                                val dependentTaskDTO = getTask(dependence?.dependent!!)
-                                dependentTaskDTO?.scope = dependentTaskDTO?.scope!! - dependentOnTaskDTO?.scope!!
-
+                        var dependencies = getDependenceForDeleteRecurse(taskId)
+                        dependencies.reversed().forEach { dependence ->
+                            val dependentTaskDTO = getTask(dependence.dependent)
+                            val dependsOnTaskDTO = getTask(dependence.dependsOn)
+                            if (dependentTaskDTO != null && dependsOnTaskDTO != null) {
+                                dependentTaskDTO.scope = dependentTaskDTO.scope!! - dependsOnTaskDTO.scope!!
                                 // Обновление
                                 updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
                             }
                         }
+
                         call.respond(deletTask(taskId), "Delete")
+
+                        //Перерасчет с времени с учетом зависимости
+                        dependencies = getDependenceForDeleteRecurse(taskId)
+                        dependencies.forEach { dependence ->
+                            val dependentTaskDTO = getTask(dependence.dependent)
+                            val dependsOnTaskDTO = getTask(dependence.dependsOn)
+                            if (dependentTaskDTO != null && dependsOnTaskDTO != null) {
+                                dependentTaskDTO.scope = dependentTaskDTO.scope!! + dependsOnTaskDTO.scope!!
+                                // Обновление
+                                updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
+                            }
+                        }
 
                         // У задачи поле parent равно null будет вызвано искльчение
                         if(task?.parent != null)  {
