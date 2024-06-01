@@ -60,7 +60,7 @@ object TaskModel : Table("task") {
                 }
             } else {
                 transaction {
-                    TaskModel.select { TaskModel.parent.eq(projectId) and ((TaskModel.status eq 2) or (TaskModel.status eq 3))}.map {
+                    TaskModel.select { ((TaskModel.status eq 2) or (TaskModel.status eq 3)) and TaskModel.parent.eq(projectId)}.map {
                         TaskDTO(
                             it[TaskModel.id],
                             it[name],
