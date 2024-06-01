@@ -41,8 +41,9 @@ fun Application.UserRoleProjectController() {
                 // Запрос на получение проектов, в которых добавлен пользователь
                 get("/project") {
                     val principle = call.principal<JWTPrincipal>()
+                    val role = principle!!.payload.getClaim("role").asString()
                     val userId = principle!!.payload.getClaim("userId").asInt()
-                    val serializedList = getUserProject(userId)
+                    val serializedList = getUserProject(userId, role)
 
                     call.respond(serializedList!!)
                 }
