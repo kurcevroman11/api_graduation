@@ -13,7 +13,8 @@ class TokenManager(config: ApplicationConfig) {
     val issuer = config.property("jwt.issuer").getString()
     val secret = config.property("jwt.secret").getString()
     val audience = config.property("jwt.audience").getString()
-    val expiration: Int = config.property("jwt.expiration").getString().toInt()
+    val expiration: Long = 2592000000  // 30 дней в миллисекундах
+
 
     fun generateToken(userId: Int, role: String): String {
         val token = JWT.create()

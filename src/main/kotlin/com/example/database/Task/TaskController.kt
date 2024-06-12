@@ -99,6 +99,20 @@ fun Application.TaskContriller() {
                         val childTask = listTaskDTO.find { it.parent == task?.id }
                         listTaskDTO.removeIf { it.id == childTask?.id }
 
+                        // Удаление задачи для данная задача является зависиомой для другой
+                        val dependence = getDependenceForDelete(taskid)
+                        if(dependence != null) {
+                            listTaskDTO.removeIf { it.id == dependence.dependent }
+                        }
+
+                        // Удалеяем хвость для предовращения зациклиности
+                        val dependenceRecurse = getDependenceForDeleteRecurse(taskid)
+                        if(dependenceRecurse.isNotEmpty()) {
+
+                            listTaskDTO.removeIf { it.id == dependenceRecurse.reversed()[0].dependent }
+                        }
+
+                        // Удаления самой себя
                         listTaskDTO.removeIf { it.id == taskid }
 
                         call.respond(listTaskDTO!!)
