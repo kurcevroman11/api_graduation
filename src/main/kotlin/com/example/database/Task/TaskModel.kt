@@ -11,7 +11,9 @@ import com.example.database.man_hours.ManHoursModel.fetchById
 import com.example.db.Description.DescriptionModel
 import com.example.db.UserRoleProject.UserRoleProjectModel
 import io.ktor.http.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.*
@@ -617,14 +619,15 @@ object TaskModel : Table("task") {
     }
 
     suspend fun recalculationScore(parentId: Int, generation: Int) {
-        var count = 0
-        while (count < generation) {
-            transaction {
-                addLogger(StdOutSqlLogger)
+        withContext(Dispatchers.IO) {
+            var count = 0
+            while (count < generation) {
+                transaction {
+                    addLogger(StdOutSqlLogger)
 
-                // Обратите внимание, что используем exec для команды, которая не возвращает данные
-                exec(
-                    """
+                    // Обратите внимание, что используем exec для команды, которая не возвращает данные
+                    exec(
+                        """
             WITH RECURSIVE task_tree AS (
                 SELECT id, parent, score
                 FROM task
@@ -648,9 +651,10 @@ object TaskModel : Table("task") {
             FROM task_max_scores tms
             WHERE task.id = tms.id;
             """
-                )
+                    )
+                }
+                count++
             }
-            count++
         }
     }
 }

@@ -275,6 +275,7 @@ fun Application.TaskContriller() {
                                 recalculationScore(projectId, task?.generation!!)
                                 recalculationScoreWithDependenceForDelete()
                             } else {
+
                                 recalculationScore(projectId, task?.generation!!)
                                 recalculationScoreWithDependenceForDelete()
                             }
