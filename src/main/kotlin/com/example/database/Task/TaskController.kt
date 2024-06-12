@@ -251,7 +251,6 @@ fun Application.TaskContriller() {
                         call.respond(deletTask(taskId), "Delete")
 
                         //Перерасчет с времени с учетом зависимости
-                        dependencies = getDependenceForDeleteRecurse(taskId)
                         if(dependencies.isNotEmpty()) {
                             dependencies.forEach { dependence ->
                                 val dependentTaskDTO = getTask(dependence.dependent)
