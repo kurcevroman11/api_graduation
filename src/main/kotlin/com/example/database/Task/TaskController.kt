@@ -32,6 +32,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.launch
 
 fun Application.TaskContriller() {
     routing {
@@ -229,55 +230,48 @@ fun Application.TaskContriller() {
                 delete("/{deleteid}") {
                     val taskId = call.parameters["deleteid"]?.toIntOrNull()
                     if (taskId != null) {
-                        val projectId = getParentId(taskId)
-                        val task = getTask(taskId)
+                        launch {
+                            val projectId = getParentId(taskId)
+                            val task = getTask(taskId)
 
-                        ManHoursModel.deleteByTask(taskId)
+                            ManHoursModel.deleteByTask(taskId)
 
-                        //Перерасчет с времени с учетом зависимости
-                        var dependencies = getDependenceForDeleteRecurse(taskId)
-                        if(dependencies.isNotEmpty()) {
-                            dependencies.reversed().forEach { dependence ->
-                                val dependentTaskDTO = getTask(dependence.dependent)
-                                val dependsOnTaskDTO = getTask(dependence.dependsOn)
-                                if (dependentTaskDTO != null && dependsOnTaskDTO != null) {
-                                    dependentTaskDTO.scope = dependentTaskDTO.scope!! - dependsOnTaskDTO.scope!!
-                                    // Обновление
-                                    updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
+                            var dependencies = getDependenceForDeleteRecurse(taskId)
+                            if (dependencies.isNotEmpty()) {
+                                dependencies.reversed().forEach { dependence ->
+                                    val dependentTaskDTO = getTask(dependence.dependent)
+                                    val dependsOnTaskDTO = getTask(dependence.dependsOn)
+                                    if (dependentTaskDTO != null && dependsOnTaskDTO != null) {
+                                        dependentTaskDTO.scope = dependentTaskDTO.scope!! - dependsOnTaskDTO.scope!!
+                                        updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
+                                    }
                                 }
                             }
-                        }
 
-                        call.respond(deletTask(taskId), "Delete")
+                            call.respond(HttpStatusCode.OK, deletTask(taskId))
 
-                        //Перерасчет с времени с учетом зависимости
-                        if(dependencies.isNotEmpty()) {
-                            dependencies.forEach { dependence ->
-                                val dependentTaskDTO = getTask(dependence.dependent)
-                                val dependsOnTaskDTO = getTask(dependence.dependsOn)
-                                if (dependentTaskDTO != null && dependsOnTaskDTO != null) {
-                                    dependentTaskDTO.scope = dependentTaskDTO.scope!! + dependsOnTaskDTO.scope!!
-                                    // Обновление
-                                    updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
+                            if (dependencies.isNotEmpty()) {
+                                dependencies.forEach { dependence ->
+                                    val dependentTaskDTO = getTask(dependence.dependent)
+                                    val dependsOnTaskDTO = getTask(dependence.dependsOn)
+                                    if (dependentTaskDTO != null && dependsOnTaskDTO != null) {
+                                        dependentTaskDTO.scope = dependentTaskDTO.scope!! + dependsOnTaskDTO.scope!!
+                                        updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
+                                    }
                                 }
                             }
-                        }
 
-
-                        // У задачи поле parent равно null будет вызвано искльчение
-                        if(task?.parent != null)  {
-                            // Если удаляется единственный дочерний элемент то родителю в score присвоить 0
-                            if(getDownTask(task?.parent!!).isEmpty()) {
-                                val parent = getTask(task?.parent!!)
-                                parent?.scope = 0
-                                updateTask(parent?.id!!, parent)
-                                // Повторный перерасчет для обноления score у родительских элементов
-                                recalculationScore(projectId, task?.generation!!)
-                                recalculationScoreWithDependenceForDelete()
-                            } else {
-
-                                recalculationScore(projectId, task?.generation!!)
-                                recalculationScoreWithDependenceForDelete()
+                            if (task?.parent != null) {
+                                if (getDownTask(task?.parent!!).isEmpty()) {
+                                    val parent = getTask(task?.parent!!)
+                                    parent?.scope = 0
+                                    updateTask(parent?.id!!, parent)
+                                    recalculationScore(projectId, task?.generation!!)
+                                    recalculationScoreWithDependenceForDelete()
+                                } else {
+                                    recalculationScore(projectId, task?.generation!!)
+                                    recalculationScoreWithDependenceForDelete()
+                                }
                             }
                         }
                     } else {
