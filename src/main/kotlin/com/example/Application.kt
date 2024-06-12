@@ -35,5 +35,6 @@ fun Application.module() {
     DescriptionContriller()
     ManHoursController()
     ActivityController()
+    configureSwagger()
 }
 

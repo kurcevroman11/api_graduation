@@ -48,11 +48,6 @@ fun Application.UserRoleProjectController() {
                     call.respond(serializedList!!)
                 }
 
-                get("/task_executors") {
-                    getTask_executors()
-                    call.respond(HttpStatusCode.Created)
-                }
-
                 get("/calendar_plan/{projId}") {
                     val projId = call.parameters["projId"]?.toIntOrNull()
                     if (projId != null) {
@@ -131,18 +126,6 @@ fun Application.UserRoleProjectController() {
 
                         // Удаляем временный файл после отправки
                         tempFile.delete()
-                    } else {
-                        call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
-                    }
-                }
-
-                get("/task/{id}") {
-                    val id = call.parameters["id"]?.toIntOrNull()
-
-                    val gson = Gson()
-                    if (id != null) {
-                        val URPDTO = getALLUserProject(id)
-                        call.respond(gson.toJson(URPDTO))
                     } else {
                         call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
                     }

@@ -1,8 +1,6 @@
 package com.example.db.Task
 
-import com.example.database.Dependence.DependenceModel.getAllDependences
 import com.example.database.Dependence.DependenceModel.getDependenceForDelete
-import com.example.database.Dependence.DependenceModel.getDependences
 import com.example.database.UserRoleProject.UserRoleProjectDTO
 import com.example.database.man_hours.ManHoursModel
 import com.example.db.Description.DescriptionModel.insert
@@ -20,7 +18,6 @@ import com.example.db.Task.TaskModel.recalculationScoreWithDependence
 import com.example.db.Task.TaskModel.recalculationScoreWithDependenceForDelete
 import com.example.db.Task.TaskModel.updateTask
 import com.example.db.UserRoleProject.UserRoleProjectModel
-import com.example.plugins.createMedia
 import com.google.gson.Gson
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -171,8 +168,8 @@ fun Application.TaskContriller() {
                 }
 
                 //Обновеление задачи
-                put("update/{id}") {
-                    val taskId = call.parameters["id"]?.toIntOrNull()
+                put("update/{updateid}") {
+                    val taskId = call.parameters["updateid"]?.toIntOrNull()
 
                     val task = call.receive<String>()
                     val gson = Gson()
@@ -181,8 +178,8 @@ fun Application.TaskContriller() {
                 }
 
                 //Удаление задачи
-                delete("/{id}") {
-                    val taskId = call.parameters["id"]?.toIntOrNull()
+                delete("/{deleteid}") {
+                    val taskId = call.parameters["deleteid"]?.toIntOrNull()
                     if (taskId != null) {
                         val projectId = getParentId(taskId)
                         val task = getTask(taskId)
