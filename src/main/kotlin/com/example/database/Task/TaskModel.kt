@@ -570,44 +570,6 @@ object TaskModel : Table("task") {
         }
     }
 
-    fun recalculationScore(parentId: Int, generation: Int) {
-        var count = 0
-        while (count < generation) {
-            transaction {
-                addLogger(StdOutSqlLogger)
-
-                // Обратите внимание, что используем exec для команды, которая не возвращает данные
-                exec(
-                    """
-            WITH RECURSIVE task_tree AS (
-                SELECT id, parent, score
-                FROM task
-                WHERE id = $parentId
-                UNION ALL
-                SELECT t.id, t.parent, t.score
-                FROM task t
-                INNER JOIN task_tree tt ON t.parent = tt.id
-            ),
-            task_max_scores AS (
-                SELECT 
-                    tt.id,
-                    COALESCE(
-                        (SELECT MAX(score) FROM task_tree WHERE parent = tt.id),  -- tt относится к task_tree
-                        tt.score  -- если у задачи нет дочерних узлов, используется ее собственное значение
-                    ) AS max_score
-                FROM task_tree tt
-            )
-            UPDATE task
-            SET score = tms.max_score
-            FROM task_max_scores tms
-            WHERE task.id = tms.id;
-            """
-                )
-            }
-            count++
-        }
-    }
-
     // Рекурсивная функция для получения всех задач
     // Функция для сбора всех задач в один плоский список
     fun collectAllTasks(projectId: Int): MutableList<TaskDTO> {
@@ -653,7 +615,46 @@ object TaskModel : Table("task") {
 
         return flatTasks
     }
+
+    suspend fun recalculationScore(parentId: Int, generation: Int) {
+        var count = 0
+        while (count < generation) {
+            transaction {
+                addLogger(StdOutSqlLogger)
+
+                // Обратите внимание, что используем exec для команды, которая не возвращает данные
+                exec(
+                    """
+            WITH RECURSIVE task_tree AS (
+                SELECT id, parent, score
+                FROM task
+                WHERE id = $parentId
+                UNION ALL
+                SELECT t.id, t.parent, t.score
+                FROM task t
+                INNER JOIN task_tree tt ON t.parent = tt.id
+            ),
+            task_max_scores AS (
+                SELECT 
+                    tt.id,
+                    COALESCE(
+                        (SELECT MAX(score) FROM task_tree WHERE parent = tt.id),  -- tt относится к task_tree
+                        tt.score  -- если у задачи нет дочерних узлов, используется ее собственное значение
+                    ) AS max_score
+                FROM task_tree tt
+            )
+            UPDATE task
+            SET score = tms.max_score
+            FROM task_max_scores tms
+            WHERE task.id = tms.id;
+            """
+                )
+            }
+            count++
+        }
+    }
 }
+
 
 fun dateTimeToString(dateTime: DateTime): String {
     val pattern = "yyyy-MM-dd HH:mm:ss"
