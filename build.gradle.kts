@@ -88,4 +88,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
     testImplementation("io.ktor:ktor-server-tests-jvm:$ktor_version")
     testImplementation("io.ktor:ktor-server-test-host-jvm:$ktor_version")
+
+    // Swagger
+    implementation("io.ktor:ktor-server-swagger:2.0.0")
 }

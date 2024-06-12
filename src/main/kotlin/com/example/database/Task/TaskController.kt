@@ -24,7 +24,6 @@ import com.example.db.Task.TaskModel.recalculationScoreWithDependence
 import com.example.db.Task.TaskModel.recalculationScoreWithDependenceForDelete
 import com.example.db.Task.TaskModel.updateTask
 import com.example.db.UserRoleProject.UserRoleProjectModel
-import com.example.plugins.createMedia
 import com.google.gson.Gson
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -173,8 +172,8 @@ fun Application.TaskContriller() {
                 }
 
                 //Обновеление задачи
-                put("update/{id}") {
-                    val taskId = call.parameters["id"]?.toIntOrNull()
+                put("update/{updateid}") {
+                    val taskId = call.parameters["updateid"]?.toIntOrNull()
 
                     if (taskId != null) {
                         val task = call.receive<String>()
@@ -213,8 +212,8 @@ fun Application.TaskContriller() {
                 }
 
                 //Удаление задачи
-                delete("/{id}") {
-                    val taskId = call.parameters["id"]?.toIntOrNull()
+                delete("/{deleteid}") {
+                    val taskId = call.parameters["deleteid"]?.toIntOrNull()
                     if (taskId != null) {
                         val projectId = getParentId(taskId)
                         val task = getTask(taskId)

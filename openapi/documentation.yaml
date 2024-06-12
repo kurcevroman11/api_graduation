@@ -1,0 +1,783 @@
+openapi: 3.0.0
+info:
+  title: Task Master
+  version: 1.0.0
+paths:
+  /login:
+    post:
+      summary: User login
+      operationId: loginUser
+      tags:
+        - Authentication
+      requestBody:
+        description: User credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginReceiveRemote'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponseRemote'
+        '400':
+          description: Invalid credentials
+  /task/{taskid}:
+    get:
+      summary: Get task by ID
+      tags:
+        - Task
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID of the task
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid ID format
+        '401':
+          description: Unauthorized
+  /task/downtask/unfulfilled/{id}:
+    get:
+      summary: Get unfulfilled tasks/subtasks
+      tags:
+        - Task
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID of the task
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid ID format
+        '401':
+          description: Unauthorized
+  /task/downtask/completed/{id}:
+    get:
+      summary: Get completed tasks/subtasks
+      tags:
+        - Task
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID of the task
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid ID format
+        '401':
+          description: Unauthorized
+  /task/taskdependence/{projectid}/{taskid}:
+    get:
+      summary: Get tasks excluding parent and child dependencies
+      tags:
+        - Task
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: projectid
+          schema:
+            type: integer
+          required: true
+          description: ID of the project
+        - in: path
+          name: taskid
+          schema:
+            type: integer
+          required: true
+          description: ID of the task
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid ID format
+        '401':
+          description: Unauthorized
+  /task/update/{id}:
+    put:
+      summary: Update a task
+      tags:
+        - Task
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID of the task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '200':
+          description: Task updated
+        '400':
+          description: Invalid ID format
+        '401':
+          description: Unauthorized
+  /task:
+    post:
+      summary: Create a new project
+      tags:
+        - Project
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+      responses:
+        '201':
+          description: Project created
+        '403':
+          description: You are not an admin or project manager
+        '401':
+          description: Unauthorized
+  /task/{id}:
+    post:
+      summary: Create subtask for a given task
+      tags:
+        - Task
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID of the parent task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskCreate'
+      responses:
+        '201':
+          description: Task created
+        '400':
+          description: Invalid ID format
+        '401':
+          description: Unauthorized
+  /task/{deleteid}:
+    delete:
+      summary: Delete a task
+      tags:
+        - Task
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - in: path
+          name: deleteid
+          schema:
+            type: integer
+          required: true
+          description: ID of the task
+      responses:
+        '200':
+          description: Task deleted
+        '400':
+          description: Invalid ID format
+        '401':
+          description: Unauthorized
+  /activity:
+    get:
+      summary: Get all activities
+      operationId: getAllActivities
+      tags:
+        - Activity
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of activities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activity'
+        '401':
+          description: Unauthorized
+  /user_role_project/calendar_plan/{projId}:
+    get:
+      summary: Get project's calendar plan
+      description: Returns a list of scheduled tasks for the project
+      tags:
+        - UserRoleProject
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: projId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+  /user_role_project/notification:
+    get:
+      summary: Get user's notifications
+      description: Returns a list of notifications for the user
+      tags:
+        - UserRoleProject
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+        '401':
+          description: Unauthorized
+  /user_role_project/excel/{projId}:
+    get:
+      summary: Export project's tasks to Excel
+      description: Returns an Excel file with a list of tasks for the project
+      tags:
+        - UserRoleProject
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: projId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+  /user_role_project:
+    post:
+      summary: Add user to project or task
+      description: Adds a user to a project or task, depending on the provided data
+      tags:
+        - UserRoleProject
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRoleProjectDTO'
+      responses:
+        '201':
+          description: Created
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        '401':
+          description: Unauthorized
+  /user_role_project/{updateid}:
+    put:
+      summary: Update user's role in project or task
+      description: Updates a user's role in a project or task, depending on the provided data
+      tags:
+        - UserRoleProject
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: updateid
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRoleProjectDTO'
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+  /user_role_project/{id}:
+    delete:
+      summary: Remove user from project or task
+      description: Removes a user from a project or task, depending on the provided data
+      tags:
+        - UserRoleProject
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+  /user_role_project/fromproject/{projectId}/{personid}:
+    delete:
+      summary: Remove user from project
+      description: Removes a user from a project and all its tasks
+      tags:
+        - UserRoleProject
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: personid
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+  /user_role_project/fromtask/{taskId}/{personid}:
+    delete:
+      summary: Remove user from task
+      description: Removes a user from a task
+      tags:
+        - UserRoleProject
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: personid
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+  /user_role_project/project:
+    get:
+      summary: Get list project
+      operationId: getListProject
+      tags:
+        - Project
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: A list of project
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '401':
+          description: Unauthorized
+  /person:
+    get:
+      summary: Get all persons
+      description: Returns a list of all persons in the system
+      tags:
+        - Person
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonDTO'
+        '401':
+          description: Unauthorized
+    post:
+      summary: Create a new person
+      description: Creates a new person in the system
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonDTO'
+      responses:
+        '201':
+          description: Created
+        '401':
+          description: Unauthorized
+  /person/freeperson/{projId}:
+    get:
+      summary: Get free persons for a project
+      description: Returns a list of persons that are not assigned to the project
+      tags:
+        - Person
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: projId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonDTO'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+  /person/freepersontask/{taskId}:
+    get:
+      summary: Get free persons for a task
+      description: Returns a list of persons that are not assigned to the task
+      tags:
+        - Person
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonDTO'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+  /person/personintask/{taskId}:
+    get:
+      summary: Get persons in a task
+      description: Returns a list of persons that are assigned to the task
+      tags:
+        - Person
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonDTO'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+  /person/personinproject/{projectId}:
+    get:
+      summary: Get persons in a project
+      description: Returns a list of persons that are assigned to the project
+      tags:
+        - Person
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PersonDTO'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+  /person/{id}:
+    delete:
+      summary: Delete a person
+      description: Deletes a person from the system by ID
+      tags:
+        - Person
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LoginReceiveRemote:
+      type: object
+      required:
+        - login
+        - password
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+    RegisterResponseRemote:
+      type: object
+      properties:
+        tokenLong:
+          type: string
+        adminOrProjectManager:
+          type: boolean
+    Activity:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+    Project:
+      type: object
+      properties:
+        name:
+          type: string
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        status:
+          type: integer
+          format: int64
+        start_date:
+          type: string
+        scope:
+          type: integer
+          format: int64
+        parent:
+          type: integer
+          format: int64
+        userCount:
+          type: integer
+          format: int64
+        generation:
+          type: integer
+          format: int64
+        content:
+          type: string
+        typeofactivityid:
+          type: integer
+          format: int64
+        position:
+          type: integer
+          format: int64
+        taskDependenceOn:
+          $ref: '#/components/schemas/TaskDependenceOn'
+    TaskCreate:
+      type: object
+      properties:
+        name:
+          type: string
+        scope:
+          type: integer
+          format: int64
+        typeofactivityid:
+          type: integer
+          format: int64
+    TaskDependenceOn:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          nullable: true
+        name:
+          type: string
+          nullable: true
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        date:
+          type: string
+          format: date-time
+        user_id:
+          type: integer
+          format: int32
+    UserRoleProjectDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        userid:
+          type: integer
+          format: int32
+        role:
+          type: string
+        projectid:
+          type: integer
+          format: int32
+        current_task_id:
+          type: integer
+          format: int32
+    PersonDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        surname:
+          type: string
+        name:
+          type: string
+        patronymic:
+          type: string
+        role:
+          type: string

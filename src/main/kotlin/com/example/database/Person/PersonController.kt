@@ -20,23 +20,10 @@ fun Application.PersonContriller() {
     routing {
         authenticate("auth-jwt") {
             route("/person") {
+                // Запрос для отображение всех пользователей
                 get {
                     val personDTO = PersonModule.fetchAllPerson()
                     call.respond(personDTO)
-                }
-
-                get("/single"){
-                    val principle = call.principal<JWTPrincipal>()
-                    val userId = principle!!.payload.getClaim("userId").asInt()
-
-                    val user = UserModule.fetchUserID(userId)
-
-                    if (user!!.personId != null) {
-                        val personDTO = PersonModule.fetchPersonID(user!!.personId!!)
-                        call.respond(personDTO!!)
-                    } else {
-                        call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
-                    }
                 }
 
                 // Запрос для отображение тех пользователей которых можно добавить в проект
@@ -83,16 +70,7 @@ fun Application.PersonContriller() {
                     }
                 }
 
-                get("/{id}") {
-                    val personId = call.parameters["id"]?.toIntOrNull()
-                    if (personId != null) {
-                        val personDTO = PersonModule.fetchPersonID(personId)
-                        call.respond(personDTO!!)
-                    } else {
-                        call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
-                    }
-                }
-
+                // Создание нового пользователя
                 post {
                     val person = call.receive<String>()
                     val gson = Gson()
@@ -100,19 +78,6 @@ fun Application.PersonContriller() {
                     val personDTO = gson.fromJson(person, PersonDTO::class.java)
                     PersonModule.insertPerson(personDTO)
                     call.respond(HttpStatusCode.Created)
-                }
-
-                put("/{id}") {
-                    val personID = call.parameters["id"]?.toIntOrNull()
-                    if (personID != null) {
-                        val person = call.receive<String>()
-                        val gson = Gson()
-
-                        val personDTO = gson.fromJson(person, PersonDTO::class.java)
-                        call.respond(PersonModule.updatePerson(personID, personDTO))
-                    } else {
-                        call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
-                    }
                 }
 
                 delete("/{id}") {
