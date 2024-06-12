@@ -1,6 +1,12 @@
 package com.example.db.Task
 
+import com.example.database.Dependence.Dependence
+import com.example.database.Dependence.DependenceController
+import com.example.database.Dependence.DependenceModel
+import com.example.database.Dependence.DependenceModel.getAllDependences
 import com.example.database.Dependence.DependenceModel.getDependenceForDelete
+import com.example.database.Dependence.DependenceModel.getDependenceForDeleteRecurse
+import com.example.database.Dependence.DependenceModel.getDependences
 import com.example.database.UserRoleProject.UserRoleProjectDTO
 import com.example.database.man_hours.ManHoursModel
 import com.example.db.Description.DescriptionModel.insert
@@ -128,8 +134,6 @@ fun Application.TaskContriller() {
                         recalculationScore(projectId, taskOrSubtask.generation!!)
                         recalculationScoreWithDependence()
 
-
-
                         call.respond(HttpStatusCode.Created)
                     } else {
                         call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
@@ -171,10 +175,40 @@ fun Application.TaskContriller() {
                 put("update/{updateid}") {
                     val taskId = call.parameters["updateid"]?.toIntOrNull()
 
-                    val task = call.receive<String>()
-                    val gson = Gson()
-                    val taskDTO = gson.fromJson(task, TaskDTO::class.java)
-                    call.respond(updateTask(taskId!!, taskDTO))
+                    if (taskId != null) {
+                        val task = call.receive<String>()
+                        val gson = Gson()
+                        val taskDTO = gson.fromJson(task, TaskDTO::class.java)
+                        val taskBeforeUpdate = getTask(taskId)
+
+                        call.respond(updateTask(taskId!!, taskDTO))
+
+                        var dependence = getDependences(taskId)
+                        if(dependence != null) {
+                            DependenceModel.recalculationDependence(
+                                dependent = dependence.dependent,
+                                Dependence(
+                                    dependent = dependence.dependent,
+                                    dependsOn = dependence.dependsOn,
+                                ),
+                                updateTask = taskBeforeUpdate
+                            )
+                        } else {
+                            dependence = getDependenceForDelete(taskId)
+                            if(dependence != null) {
+                                DependenceModel.recalculationDependence(
+                                    dependent = dependence.dependent,
+                                    Dependence(
+                                        dependent = dependence.dependent,
+                                        dependsOn = dependence.dependsOn,
+                                    ),
+                                    updateTask = taskBeforeUpdate
+                                )
+                            }
+                        }
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
+                    }
                 }
 
                 //Удаление задачи
@@ -187,32 +221,30 @@ fun Application.TaskContriller() {
                         ManHoursModel.deleteByTask(taskId)
 
                         //Перерасчет с времени с учетом зависимости
-                        val dependence = getDependenceForDelete(taskId)
-                        if(dependence != null) {
-                            var dependentId2 = getDependenceForDelete(dependence?.dependent!!)
-                            if(dependentId2 != null) {
-                                var dependentTaskDTO2 = getTask(dependentId2?.dependent!!)
-                                while(dependentId2 != null) {
-                                    // Удаляемая привязанная задача
-                                    val dependentOnTaskDTO = getTask(dependentId2.dependsOn!!)
-                                    dependentTaskDTO2?.scope = dependentTaskDTO2?.scope!! - dependentOnTaskDTO?.scope!!
-
-                                    // Обновление
-                                    updateTask(dependentTaskDTO2.id!!, dependentTaskDTO2)
-
-                                    // Возвраещается DependeOn
-                                    dependentId2 = getDependenceForDelete(dependentId2.dependent)
-                                }
-                            } else {
-                                val dependentOnTaskDTO = getTask(dependence?.dependsOn!!)
-                                val dependentTaskDTO = getTask(dependence?.dependent!!)
-                                dependentTaskDTO?.scope = dependentTaskDTO?.scope!! - dependentOnTaskDTO?.scope!!
-
+                        var dependencies = getDependenceForDeleteRecurse(taskId)
+                        dependencies.reversed().forEach { dependence ->
+                            val dependentTaskDTO = getTask(dependence.dependent)
+                            val dependsOnTaskDTO = getTask(dependence.dependsOn)
+                            if (dependentTaskDTO != null && dependsOnTaskDTO != null) {
+                                dependentTaskDTO.scope = dependentTaskDTO.scope!! - dependsOnTaskDTO.scope!!
                                 // Обновление
                                 updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
                             }
                         }
+
                         call.respond(deletTask(taskId), "Delete")
+
+                        //Перерасчет с времени с учетом зависимости
+                        dependencies = getDependenceForDeleteRecurse(taskId)
+                        dependencies.forEach { dependence ->
+                            val dependentTaskDTO = getTask(dependence.dependent)
+                            val dependsOnTaskDTO = getTask(dependence.dependsOn)
+                            if (dependentTaskDTO != null && dependsOnTaskDTO != null) {
+                                dependentTaskDTO.scope = dependentTaskDTO.scope!! + dependsOnTaskDTO.scope!!
+                                // Обновление
+                                updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
+                            }
+                        }
 
                         // У задачи поле parent равно null будет вызвано искльчение
                         if(task?.parent != null)  {
