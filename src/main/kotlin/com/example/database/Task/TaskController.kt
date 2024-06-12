@@ -236,13 +236,15 @@ fun Application.TaskContriller() {
 
                         //Перерасчет с времени с учетом зависимости
                         var dependencies = getDependenceForDeleteRecurse(taskId)
-                        dependencies.reversed().forEach { dependence ->
-                            val dependentTaskDTO = getTask(dependence.dependent)
-                            val dependsOnTaskDTO = getTask(dependence.dependsOn)
-                            if (dependentTaskDTO != null && dependsOnTaskDTO != null) {
-                                dependentTaskDTO.scope = dependentTaskDTO.scope!! - dependsOnTaskDTO.scope!!
-                                // Обновление
-                                updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
+                        if(dependencies.isNotEmpty()) {
+                            dependencies.reversed().forEach { dependence ->
+                                val dependentTaskDTO = getTask(dependence.dependent)
+                                val dependsOnTaskDTO = getTask(dependence.dependsOn)
+                                if (dependentTaskDTO != null && dependsOnTaskDTO != null) {
+                                    dependentTaskDTO.scope = dependentTaskDTO.scope!! - dependsOnTaskDTO.scope!!
+                                    // Обновление
+                                    updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
+                                }
                             }
                         }
 
@@ -250,15 +252,18 @@ fun Application.TaskContriller() {
 
                         //Перерасчет с времени с учетом зависимости
                         dependencies = getDependenceForDeleteRecurse(taskId)
-                        dependencies.forEach { dependence ->
-                            val dependentTaskDTO = getTask(dependence.dependent)
-                            val dependsOnTaskDTO = getTask(dependence.dependsOn)
-                            if (dependentTaskDTO != null && dependsOnTaskDTO != null) {
-                                dependentTaskDTO.scope = dependentTaskDTO.scope!! + dependsOnTaskDTO.scope!!
-                                // Обновление
-                                updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
+                        if(dependencies.isNotEmpty()) {
+                            dependencies.forEach { dependence ->
+                                val dependentTaskDTO = getTask(dependence.dependent)
+                                val dependsOnTaskDTO = getTask(dependence.dependsOn)
+                                if (dependentTaskDTO != null && dependsOnTaskDTO != null) {
+                                    dependentTaskDTO.scope = dependentTaskDTO.scope!! + dependsOnTaskDTO.scope!!
+                                    // Обновление
+                                    updateTask(dependentTaskDTO.id!!, dependentTaskDTO)
+                                }
                             }
                         }
+
 
                         // У задачи поле parent равно null будет вызвано искльчение
                         if(task?.parent != null)  {
