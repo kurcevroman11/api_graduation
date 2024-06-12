@@ -7,7 +7,8 @@ import io.github.cdimascio.dotenv.Dotenv
 import io.ktor.server.config.*
 import java.util.*
 
-val dotenv: Dotenv = Dotenv.configure().load()
+val dotenv = Dotenv.configure().directory("/app").load()
+
 
 class TokenManager(config: ApplicationConfig) {
     val issuer = config.property("jwt.issuer").getString()
