@@ -13,7 +13,7 @@ fun Application.configureRegisterRouting() {
                 val principle = call.principal<JWTPrincipal>()
                 val role = principle!!.payload.getClaim("role").asString()
 
-                if(role == "Админ" || role == "Проект-менеджер") {
+                if(role == "Админ" || role == "Проектный менеджмент") {
                     val registerController = RegisterController(call)
                     registerController.registerNewUser()
                     call.response.status(HttpStatusCode(201, "User created"))

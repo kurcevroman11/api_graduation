@@ -136,7 +136,7 @@ fun Application.UserRoleProjectController() {
                     val principle = call.principal<JWTPrincipal>()
                     val roles = principle!!.payload.getClaim("role").asString()
 
-                    if(roles == "Админ" || roles == "Проект-менеджер") {
+                    if(roles == "Админ" || roles == "Проектный менеджмент") {
                         val urp = call.receive<String>()
                         val gson = Gson()
 

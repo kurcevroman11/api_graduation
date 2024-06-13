@@ -403,7 +403,7 @@ class UseCase {
             login = "Test24test",
             password = "test24",
             fio = "Тест Тест Тест",
-            role = "Проект-менеджер"
+            role = "Проектный менеджмент"
         )
         response = client.post("/register") {
             contentType(ContentType.Application.Json)

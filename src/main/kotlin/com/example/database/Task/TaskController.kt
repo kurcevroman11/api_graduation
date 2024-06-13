@@ -164,7 +164,7 @@ fun Application.TaskContriller() {
 
                     val role = principle!!.payload.getClaim("role").asString()
 
-                    if (role == "Админ" || role == "Проект-менеджер") {
+                    if (role == "Админ" || role == "Проектный менеджмент") {
                         val name = gson.fromJson(task, TaskDTO::class.java)
                         name.generation = 1
                         name.scope = 0
