@@ -34,7 +34,7 @@ class LoginController(private val call: ApplicationCall, private val config: App
                 }
 
                 var adminOrProjectManager = false
-                if(role == "Админ" || role == "Проект-менеджер"){
+                if(role == "Админ" || role == "Проектный менеджмент"){
                     adminOrProjectManager = true
                 }
 
