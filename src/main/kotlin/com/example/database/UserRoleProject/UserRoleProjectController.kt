@@ -2,25 +2,19 @@ package com.example.db.UserRoleProject
 
 import com.example.database.UserRoleProject.UserRoleProjectDTO
 import com.example.db.Task.TaskModel.collectAllTasks
-import com.example.db.Task.TaskModel.getParentId
 import com.example.db.UserRoleProject.UserRoleProjectModel.clearFieldCreateProject
 import com.example.db.UserRoleProject.UserRoleProjectModel.deleteFromProject
 import com.example.db.UserRoleProject.UserRoleProjectModel.deleteFromTask
-import com.example.db.UserRoleProject.UserRoleProjectModel.deleteURP
 import com.example.db.UserRoleProject.UserRoleProjectModel.fetchUserInProj
-import com.example.db.UserRoleProject.UserRoleProjectModel.getALLUserProject
 import com.example.db.UserRoleProject.UserRoleProjectModel.getNotification
-import com.example.db.UserRoleProject.UserRoleProjectModel.getTask_executors
 import com.example.db.UserRoleProject.UserRoleProjectModel.getUserProject
 import com.example.db.UserRoleProject.UserRoleProjectModel.insert
 import com.example.db.UserRoleProject.UserRoleProjectModel.linkinUserRootTask
 import com.example.db.UserRoleProject.UserRoleProjectModel.scheduling
 import com.example.db.UserRoleProject.UserRoleProjectModel.updateURP
-import com.example.pluginsimport.Excel
 import com.google.gson.Gson
 import io.ktor.http.*
 import io.ktor.http.HttpStatusCode.Companion.OK
-import io.ktor.http.content.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -29,7 +23,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.apache.poi.ss.usermodel.*
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import java.io.ByteArrayOutputStream
 import java.io.FileOutputStream
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -177,15 +170,6 @@ fun Application.UserRoleProjectController() {
 
                         val URPDTO = gson.fromJson(urp, UserRoleProjectDTO::class.java)
                         call.respond(updateURP(urpId, userId, URPDTO))
-                    } else {
-                        call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
-                    }
-                }
-
-                delete("/{id}") {
-                    val URPId = call.parameters["id"]?.toIntOrNull()
-                    if (URPId != null) {
-                        call.respond(deleteURP(URPId), "Delete")
                     } else {
                         call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
                     }

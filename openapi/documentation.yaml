@@ -300,31 +300,28 @@ paths:
           description: Unauthorized
   /user_role_project/excel/{projId}:
     get:
-      summary: Export project's tasks to Excel
-      description: Returns an Excel file with a list of tasks for the project
-      tags:
-        - UserRoleProject
+      summary: Export project tasks to Excel
+      description: Exports tasks of a project to an Excel file.
       security:
         - bearerAuth: [ ]
+      tags:
+        - Project
       parameters:
         - name: projId
           in: path
           required: true
           schema:
             type: integer
-            format: int32
       responses:
         '200':
-          description: OK
+          description: Excel file containing the tasks
           content:
-            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+            application/octet-stream:
               schema:
                 type: string
                 format: binary
         '400':
-          description: Bad Request
-        '401':
-          description: Unauthorized
+          description: Invalid ID format
   /user_role_project:
     post:
       summary: Add user to project or task
@@ -367,28 +364,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UserRoleProjectDTO'
-      responses:
-        '200':
-          description: OK
-        '400':
-          description: Bad Request
-        '401':
-          description: Unauthorized
-  /user_role_project/{id}:
-    delete:
-      summary: Remove user from project or task
-      description: Removes a user from a project or task, depending on the provided data
-      tags:
-        - UserRoleProject
-      security:
-        - bearerAuth: [ ]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: integer
-            format: int32
       responses:
         '200':
           description: OK
@@ -493,6 +468,8 @@ paths:
     post:
       summary: Create a new person
       description: Creates a new person in the system
+      tags:
+        - Person
       security:
         - bearerAuth: [ ]
       requestBody:
@@ -639,6 +616,351 @@ paths:
           description: Bad Request
         '401':
           description: Unauthorized
+  /type_of_activity:
+    get:
+      summary: Get all types of activity
+      description: Returns a list of all types of activity in the system
+      tags:
+        - Type of Activity
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Type_of_activity'
+        '401':
+          description: Unauthorized
+  /status:
+    get:
+      summary: Get all types of activity
+      description: Returns a list of all types of status fot task in the system
+      tags:
+        - Status
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Status'
+        '401':
+          description: Unauthorized
+  /manhours/{id}:
+    post:
+      summary: Create man-hours entry
+      description: Creates a new man-hours entry.
+      tags:
+        - Man Hours
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManHoursDTO'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '201':
+          description: Man-hours created
+        '401':
+          description: Unauthorized
+    put:
+      summary: Update man-hours entry
+      description: Updates an existing man-hours entry by ID.
+      tags:
+        - Man Hours
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ManHoursDTO'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+    get:
+      summary: Fetch man-hours entry
+      description: Fetches man-hours entry by ID.
+      tags:
+        - Man Hours
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManHoursDTO'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+    delete:
+      summary: Delete man-hours entry
+      description: Deletes an existing man-hours entry by ID.
+      tags:
+        - Man Hours
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+  /manhours/specific/{manhoursid}:
+    get:
+      summary: Fetch specific man-hours entry
+      description: Fetches a specific man-hours entry by manhours ID.
+      tags:
+        - Man Hours
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: manhoursid
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManHoursDTO'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+  /manhours/report/{projId}:
+    get:
+      summary: Fetch report by project ID
+      description: Generates a report for man-hours by project ID.
+      tags:
+        - Man Hours
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: projId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+  /manhours/excelreport/{projId}:
+    get:
+      summary: Fetch Excel report by project ID
+      description: Generates an Excel report for man-hours by project ID.
+      tags:
+        - Man Hours
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: projId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid project ID
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+  /description/download/{id}/{fileId}:
+    get:
+      summary: Download file by ID
+      description: Downloads a file associated with a description.
+      tags:
+        - Description
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid ID format
+  /description/upload/{id}:
+    post:
+      summary: Upload file
+      description: Uploads a file to the description by ID.
+      tags:
+        - Description
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                description:
+                  type: string
+      responses:
+        '200':
+          description: File uploaded
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Invalid ID format or file too large
+  /description/{id}/{fileid}:
+    delete:
+      summary: Delete file by ID
+      description: Deletes a specific file associated with a description by file ID.
+      tags:
+        - Description
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: fileid
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: File deleted
+        '400':
+          description: Invalid ID format
+  /description/{id}:
+    get:
+      summary: Get description by ID
+      description: Returns a description along with its associated files by description ID.
+      tags:
+        - Description
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DescriptionDTOFileDTO'
+        '400':
+          description: Invalid ID format or description not found
+  /dependence:
+    post:
+      summary: Create dependence
+      description: Creates a new dependence.
+      tags:
+        - Dependence
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dependence'
+      responses:
+        '201':
+          description: Dependence created
+        '401':
+          description: Unauthorized
+  /dependence/{dependsOn}:
+    delete:
+      summary: Delete dependence
+      description: Deletes a dependence specified by the dependsOn parameter.
+      tags:
+        - Dependence
+      security:
+        - bearerAuth: [ ]
+      parameters:
+        - name: dependsOn
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Dependence deleted
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
 components:
   securitySchemes:
     bearerAuth:
@@ -759,8 +1081,6 @@ components:
         userid:
           type: integer
           format: int32
-        role:
-          type: string
         projectid:
           type: integer
           format: int32
@@ -781,3 +1101,81 @@ components:
           type: string
         role:
           type: string
+    Type_of_activity:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+    ManHoursDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          example: "11/07/2024"
+        hours_spent:
+          type: string
+          example: "0030"
+        comment:
+          type: string
+          example: "Completed task"
+        taskid:
+          type: integer
+          example: 101
+        projectid:
+          type: integer
+          example: 202
+        activityid:
+          type: integer
+          example: 303
+    Status:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+    DescriptionDTOFileDTO:
+      type: object
+      properties:
+        descriptionId:
+          type: integer
+          example: 1
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileDTO'
+    FileDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "example"
+        descriptionId:
+          type: integer
+          example: 1
+        type:
+          type: string
+          example: "txt"
+        orig_filename:
+          type: string
+          example: "example.txt"
+    Dependence:
+      type: object
+      properties:
+        dependsOn:
+          type: integer
+          example: 1
+        dependent:
+          type: integer
+          example: 1

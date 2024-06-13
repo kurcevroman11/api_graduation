@@ -3,7 +3,6 @@ package com.example
 import com.example.dao.DatabaseFactory
 import com.example.database.Dependence.DependenceController
 import com.example.database.Person.PersonContriller
-import com.example.database.Role.RoleContriller
 import com.example.database.Status.StatusContriller
 import com.example.database.activity.ActivityController
 import com.example.database.man_hours.ManHoursController
@@ -27,7 +26,6 @@ fun Application.module() {
     TaskContriller()
     DependenceController()
     UserContriller()
-    RoleContriller()
     UserRoleProjectController()
     PersonContriller()
     Type_of_activityContriller()
