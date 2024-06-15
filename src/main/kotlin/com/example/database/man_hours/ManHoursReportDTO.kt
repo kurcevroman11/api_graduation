@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ManHoursReportDTO(
     val id: Int,
-    val createdAt: String?,
+    var createdAt: String?,
     val hoursSpent: String?,
     val taskId: Int,
     val taskName: String

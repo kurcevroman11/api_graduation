@@ -23,6 +23,8 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.apache.poi.ss.usermodel.*
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -72,11 +74,21 @@ fun Application.UserRoleProjectController() {
 
                         val headerCellStyle: CellStyle = workbook.createCellStyle().apply {
                             setFont(headerFont)
+                            fillForegroundColor = IndexedColors.LIGHT_YELLOW.index
+                            fillPattern = FillPatternType.SOLID_FOREGROUND
+                            borderBottom = BorderStyle.THIN
+                            borderTop = BorderStyle.THIN
+                            borderLeft = BorderStyle.THIN
+                            borderRight = BorderStyle.THIN
                         }
 
                         val dateCellStyle: CellStyle = workbook.createCellStyle().apply {
                             fillForegroundColor = IndexedColors.LIGHT_GREEN.index
                             fillPattern = FillPatternType.SOLID_FOREGROUND
+                            borderBottom = BorderStyle.THIN
+                            borderTop = BorderStyle.THIN
+                            borderLeft = BorderStyle.THIN
+                            borderRight = BorderStyle.THIN
                         }
 
                         val headerRow: Row = sheet.createRow(0)
@@ -87,6 +99,11 @@ fun Application.UserRoleProjectController() {
                         }.distinct().sorted()
 
                         // Создание заголовков для дат
+                        headerRow.createCell(0).apply {
+                            setCellValue("Task Name")
+                            cellStyle = headerCellStyle
+                        }
+
                         dates.forEachIndexed { index, date ->
                             val cell = headerRow.createCell(index + 1)
                             cell.setCellValue(date.toString())
@@ -96,7 +113,10 @@ fun Application.UserRoleProjectController() {
                         // Заполнение данных задач
                         tasks.forEachIndexed { rowIndex, task ->
                             val row = sheet.createRow(rowIndex + 1)
-                            row.createCell(0).setCellValue(task.nameTask)
+                            row.createCell(0).apply {
+                                setCellValue(task.nameTask)
+                                cellStyle = dateCellStyle
+                            }
 
                             task.execution_date.forEach { execDate ->
                                 val date = LocalDate.parse(execDate.substring(0, 10), DateTimeFormatter.ISO_DATE)
@@ -106,19 +126,26 @@ fun Application.UserRoleProjectController() {
                             }
                         }
 
-                        // Создание временного файла
-                        val tempFile = createTempFile("tasks", ".xlsx")
-                        FileOutputStream(tempFile).use { outputStream ->
-                            workbook.write(outputStream)
+                        // Автоматическая регулировка ширины столбцов
+                        for (i in 0..dates.size) {
+                            sheet.autoSizeColumn(i)
                         }
 
+                        // Записываем файл в ByteArrayOutputStream
+                        val outputStream = ByteArrayOutputStream()
+                        workbook.write(outputStream)
                         workbook.close()
 
-                        // Отправляем файл клиенту
-                        call.respondFile(tempFile)
+                        val byteArray = outputStream.toByteArray()
 
-                        // Удаляем временный файл после отправки
-                        tempFile.delete()
+                        // Отправляем файл клиенту
+                        call.response.header(
+                            HttpHeaders.ContentDisposition,
+                            ContentDisposition.Attachment.withParameter(ContentDisposition.Parameters.FileName, "calendar_plan_$projId.xlsx").toString()
+                        )
+
+                        // Отправляем файл клиенту
+                        call.respondBytes(byteArray, ContentType.Application.OctetStream, HttpStatusCode.OK)
                     } else {
                         call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
                     }

@@ -6,10 +6,13 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.apache.poi.ss.usermodel.BorderStyle
 import org.apache.poi.ss.usermodel.HorizontalAlignment
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.ByteArrayOutputStream
-import java.io.File
+import java.io.FileOutputStream
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 fun Application.ManHoursController() {
     routing {
@@ -43,17 +46,25 @@ fun Application.ManHoursController() {
                     val projectId = call.parameters["projId"]?.toIntOrNull()
 
                     if (projectId != null) {
-                        val data = fetchByProjectId(projectId)
+                        // Пример списка
+                        val manHoursReportDTOList = fetchByProjectId(projectId)
+                        manHoursReportDTOList.forEach { item ->
+                            item.createdAt = item.createdAt?.let {
+                                val offsetDateTime = OffsetDateTime.parse(it)
+                                val localDateTime = offsetDateTime.toLocalDateTime()
+                                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                                localDateTime.format(formatter)
+                            }
+                        }
 
-                        // Группируем данные по taskName и createdAt
-                        val taskNames = data.map { it.taskName }.distinct()
-                        val createdDates = data.mapNotNull { it.createdAt }.distinct().sorted()
+                        val taskNames = manHoursReportDTOList.map { it.taskName }.distinct()
+                        val createdDates = manHoursReportDTOList.mapNotNull { it.createdAt }.distinct().sorted()
 
                         val dataMap = mutableMapOf<String, MutableMap<String, String?>>()
                         taskNames.forEach { taskName ->
                             dataMap[taskName] = mutableMapOf()
                             createdDates.forEach { date ->
-                                dataMap[taskName]!![date] = data.find { it.taskName == taskName && it.createdAt == date }?.hoursSpent
+                                dataMap[taskName]!![date] = manHoursReportDTOList.find { it.taskName == taskName && it.createdAt == date }?.hoursSpent
                             }
                         }
 
@@ -65,6 +76,17 @@ fun Application.ManHoursController() {
                                 bold = true
                             })
                             alignment = HorizontalAlignment.CENTER
+                            borderBottom = BorderStyle.THIN
+                            borderLeft = BorderStyle.THIN
+                            borderRight = BorderStyle.THIN
+                            borderTop = BorderStyle.THIN
+                        }
+
+                        val dataCellStyle = workbook.createCellStyle().apply {
+                            borderBottom = BorderStyle.THIN
+                            borderLeft = BorderStyle.THIN
+                            borderRight = BorderStyle.THIN
+                            borderTop = BorderStyle.THIN
                         }
 
                         // Создаем строку заголовка
@@ -83,12 +105,21 @@ fun Application.ManHoursController() {
                         // Заполняем данные
                         taskNames.forEachIndexed { rowIndex, taskName ->
                             val row = sheet.createRow(rowIndex + 1)
-                            row.createCell(0).setCellValue(taskName)
+                            row.createCell(0).apply {
+                                setCellValue(taskName)
+                                cellStyle = dataCellStyle
+                            }
 
                             createdDates.forEachIndexed { colIndex, date ->
                                 val cell = row.createCell(colIndex + 1)
                                 cell.setCellValue(dataMap[taskName]?.get(date))
+                                cell.cellStyle = dataCellStyle
                             }
+                        }
+
+                        // Автоматическая регулировка ширины столбцов
+                        for (i in 0..createdDates.size) {
+                            sheet.autoSizeColumn(i)
                         }
 
                         // Записываем файл в ByteArrayOutputStream
