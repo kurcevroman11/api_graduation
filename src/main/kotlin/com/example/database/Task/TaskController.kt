@@ -195,24 +195,12 @@ fun Application.TaskContriller() {
                         val gson = Gson()
                         val taskDTO = gson.fromJson(task, TaskDTO::class.java)
                         val taskBeforeUpdate = getTask(taskId)
+                        val projectId = getParentId(taskId)
 
-                        var dependence = getDependences(taskId)
-                        if(dependence != null) {
-                            DependenceModel.recalculationDependence(
-                                dependent = dependence.dependent,
-                                Dependence(
-                                    dependent = dependence.dependent,
-                                    dependsOn = dependence.dependsOn,
-                                ),
-                                updateTask = taskBeforeUpdate
-                            )
+                        call.respond(updateTask(taskId!!, taskDTO))
 
-                            // Перерасчет оценки выполнения при обновлении
-                            val projectId = getParentId(taskId)
-                            recalculationScore(projectId, taskBeforeUpdate?.generation!!)
-                            recalculationScoreWithDependenceForDelete()
-                        } else {
-                            dependence = getDependenceForDelete(taskId)
+                        if(taskDTO.scope != null) {
+                            var dependence = getDependences(taskId)
                             if(dependence != null) {
                                 DependenceModel.recalculationDependence(
                                     dependent = dependence.dependent,
@@ -222,18 +210,26 @@ fun Application.TaskContriller() {
                                     ),
                                     updateTask = taskBeforeUpdate
                                 )
-                            }
 
-                            // Перерасчет оценки выполнения при обновлении
-                            val projectId = getParentId(taskId)
-                            recalculationScore(projectId, taskBeforeUpdate?.generation!!)
-                            recalculationScoreWithDependenceForDelete()
+                                recalculationScore(projectId, taskBeforeUpdate?.generation!!)
+                            } else {
+                                var dependence2 = getDependenceForDelete(taskId)
+                                if(dependence2 != null) {
+                                    DependenceModel.recalculationDependence(
+                                        dependent = dependence2.dependent,
+                                        Dependence(
+                                            dependent = dependence2.dependent,
+                                            dependsOn = dependence2.dependsOn,
+                                        ),
+                                        updateTask = taskBeforeUpdate
+                                    )
+                                    recalculationScore(projectId, taskBeforeUpdate?.generation!!)
+                                } else {
+                                    // Перерасчет оценки выполнения при обновлении
+                                    recalculationScore(projectId, taskBeforeUpdate?.generation!!)
+                                }
+                            }
                         }
-                        call.respond(updateTask(taskId!!, taskDTO))
-                        // Перерасчет оценки выполнения при обновлении
-                        val projectId = getParentId(taskId)
-                        recalculationScore(projectId, taskBeforeUpdate?.generation!!)
-                        recalculationScoreWithDependenceForDelete()
                     } else {
                         call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
                     }
