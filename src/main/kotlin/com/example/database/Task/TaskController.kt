@@ -196,8 +196,6 @@ fun Application.TaskContriller() {
                         val taskDTO = gson.fromJson(task, TaskDTO::class.java)
                         val taskBeforeUpdate = getTask(taskId)
 
-                        call.respond(updateTask(taskId!!, taskDTO))
-
                         var dependence = getDependences(taskId)
                         if(dependence != null) {
                             DependenceModel.recalculationDependence(
@@ -208,6 +206,11 @@ fun Application.TaskContriller() {
                                 ),
                                 updateTask = taskBeforeUpdate
                             )
+
+                            // Перерасчет оценки выполнения при обновлении
+                            val projectId = getParentId(taskId)
+                            recalculationScore(projectId, taskBeforeUpdate?.generation!!)
+                            recalculationScoreWithDependenceForDelete()
                         } else {
                             dependence = getDependenceForDelete(taskId)
                             if(dependence != null) {
@@ -220,7 +223,17 @@ fun Application.TaskContriller() {
                                     updateTask = taskBeforeUpdate
                                 )
                             }
+
+                            // Перерасчет оценки выполнения при обновлении
+                            val projectId = getParentId(taskId)
+                            recalculationScore(projectId, taskBeforeUpdate?.generation!!)
+                            recalculationScoreWithDependenceForDelete()
                         }
+                        call.respond(updateTask(taskId!!, taskDTO))
+                        // Перерасчет оценки выполнения при обновлении
+                        val projectId = getParentId(taskId)
+                        recalculationScore(projectId, taskBeforeUpdate?.generation!!)
+                        recalculationScoreWithDependenceForDelete()
                     } else {
                         call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
                     }
