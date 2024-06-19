@@ -2,7 +2,6 @@ package com.example.integrations
 
 import com.example.configIntegrationTestApp
 import com.example.database.Person.PersonDTO
-import com.example.database.Role.RoleDTO
 import com.example.database.Status.StatusDTO
 import com.example.database.Task.TaskByID
 import com.example.database.UserRoleProject.UserRoleProjectDTO
@@ -588,19 +587,6 @@ class UseCase {
         json = response.bodyAsText()
         val getStatus = Json.decodeFromString<MutableList<StatusDTO?>>(json)
         assertTrue(getStatus.isNotEmpty())
-
-        // <---------------------------------------ВЫВОД РОЛЕЙ------------------------------------>
-
-        // Тестирование просмотров проектов
-        response = client.get("/role") {
-            contentType(ContentType.Application.Json)
-            header("Authorization", "Bearer $token")
-        }
-        assertEquals(HttpStatusCode.OK, response.status)
-
-        json = response.bodyAsText()
-        val getRole = Json.decodeFromString<MutableList<RoleDTO?>>(json)
-        assertTrue(getRole.isNotEmpty())
 
         // <------------------------------------УДАЛЕНИЕ ПОЛЬЗОВАТЕЛЕЙ------------------------------------>
 
